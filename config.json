@@ -1,0 +1,107 @@
+{
+  "baseline": {
+    "start_time": "18:30",
+    "end_time": "18:44",
+    "k_drop": 4.0,
+    "k_rise": 5.0,
+    "sigma_floor_pct": 0.02
+  },
+  "incident_window": {
+    "start_time": "18:49",
+    "end_time": "21:30",
+    "drop_eval_start": "19:00",
+    "drop_eval_end": "21:00"
+  },
+  "priors": {
+    "H1": 0.35,
+    "H2": 0.30,
+    "H3": 0.20
+  },
+  "hypotheses": {
+    "H1": {
+      "name": "Payment Gateway Outage",
+      "cancel_reason": "PAYMENT_FAILED",
+      "playbook": [
+        {"tool": "detect_onset", "query": {"metric": "payment_502_count"}},
+        {"tool": "check_temporal_order", "query": {"metric": "payment_502_count"}},
+        {"tool": "search_tickets", "query": {"pattern": "payment|debited|gateway"}},
+        {"tool": "ledger_query", "query": {"aspect": "capture_success"}},
+        {"tool": "ledger_query", "query": {"aspect": "polls_after_cancel"}},
+        {"tool": "ledger_counterfactual", "query": {"hypothesis": "H1"}}
+      ]
+    },
+    "H2": {
+      "name": "Weather/Rider Shortage",
+      "cancel_reason": "RIDER_REJECTION",
+      "playbook": [
+        {"tool": "detect_onset", "query": {"metric": "rider_rejection_rate"}},
+        {"tool": "check_temporal_order", "query": {"metric": "rider_rejection_rate"}},
+        {"tool": "search_tickets", "query": {"pattern": "rain|weather|water|storm"}},
+        {"tool": "fleet_query", "query": {"event": "RIDER_REJECT"}},
+        {"tool": "ledger_counterfactual", "query": {"hypothesis": "H2"}}
+      ]
+    },
+    "H3": {
+      "name": "Batching DB-Lock Deadlock",
+      "cancel_reason": "DISPATCH_TIMEOUT",
+      "playbook": [
+        {"tool": "query_audit_log", "query": {"key": "enable_dynamic_batching_v2"}},
+        {"tool": "detect_onset", "query": {"metric": "db_lock_waits"}},
+        {"tool": "detect_onset", "query": {"metric": "alloc_latency_sec"}},
+        {"tool": "fleet_query", "query": {"event": "PICKER_IDLE"}},
+        {"tool": "ledger_counterfactual", "query": {"hypothesis": "H3"}}
+      ]
+    }
+  },
+  "lr_rules": {
+    "H1": {
+      "surge_exists_lr": 2.0,
+      "surge_none_lr": 1.0,
+      "tickets_present_lr": 1.3,
+      "tickets_none_lr": 1.0,
+      "onset_before_anomaly_lr": 2.0,
+      "onset_after_anomaly_lr": 0.4,
+      "onset_none_lr": 1.0,
+      "capture_high_thresh": 0.95,
+      "capture_high_lr": 0.25,
+      "capture_low_thresh": 0.90,
+      "capture_low_lr": 3.0,
+      "capture_mid_lr": 1.0,
+      "polls_after_cancel_high_thresh": 0.90,
+      "polls_after_cancel_high_lr": 0.5,
+      "polls_after_cancel_low_thresh": 0.50,
+      "polls_after_cancel_low_lr": 1.5,
+      "polls_after_cancel_mid_lr": 1.0,
+      "counterfactual_multiplier": 2.0
+    },
+    "H2": {
+      "rejection_onset_exists_lr": 1.8,
+      "rejection_onset_none_lr": 1.0,
+      "tickets_present_lr": 1.4,
+      "tickets_none_lr": 1.0,
+      "rain_before_anomaly_lr": 1.6,
+      "rain_after_anomaly_lr": 0.6,
+      "rain_none_lr": 1.0,
+      "counterfactual_multiplier": 2.0
+    },
+    "H3": {
+      "flag_window_minutes": 15.0,
+      "flag_before_anomaly_lr": 2.0,
+      "flag_after_anomaly_lr": 0.5,
+      "flag_none_lr": 1.0,
+      "lock_le_anomaly_lr": 1.8,
+      "lock_gt_anomaly_lr": 0.5,
+      "latency_le_anomaly_lr": 1.5,
+      "latency_gt_anomaly_lr": 0.7,
+      "counterfactual_multiplier": 2.0
+    }
+  },
+  "thresholds": {
+    "suppressed_conf_max": 0.20,
+    "suppressed_share_max": 0.05
+  },
+  "roi": {
+    "manual_mttr_s": 16200,
+    "e2e_s": 90
+  }
+}

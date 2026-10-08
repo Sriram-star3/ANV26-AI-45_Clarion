@@ -1,0 +1,18 @@
+ts,kind,key,old,new,actor,scope,batch_size,message
+2026-10-07 18:20:00,CONFIG_TOGGLE,search_ranking_v3,false,true,ml-deployer-svc,darkstore-blr-south,,Decoy experiment: search ranking v3 rollout to 20% traffic
+2026-10-07 18:45:00,CONFIG_TOGGLE,enable_dynamic_batching_v2,false,true,ops-automation,darkstore-blr-south,,Peak surge optimization: enable dynamic multi-order batching v2
+2026-10-07 18:48:12,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 18:48:35,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 18:48:59,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 18:49:15,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 18:49:42,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 18:50:08,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 18:51:22,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 18:53:40,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 18:56:10,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 19:02:15,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 19:15:30,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 19:30:12,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 20:00:45,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 20:30:10,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
+2026-10-07 21:00:00,DB_DEADLOCK,order_alloc_lock,,,allocator-worker-4,darkstore-blr-south,5-6,Deadlock detected on resource allocation for batch_size 5-6 items in darkstore-blr-south
