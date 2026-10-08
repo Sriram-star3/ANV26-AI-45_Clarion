@@ -22,17 +22,13 @@ from fastapi.staticfiles import StaticFiles
 import duckdb
 
 
+import psutil
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-<<<<<<< HEAD
-from pydantic import BaseModel
-import duckdb
-=======
 from pydantic import BaseModel, Field
->>>>>>> origin/main
 
 from fastapi import FastAPI
 import duckdb
@@ -102,6 +98,7 @@ async def verify_peering_auth(
             detail="Peering Gate Rejected: Cluster token missing or invalid.",
         )
     return {"cluster_auth": True}
+
 
 class FeedbackRequest(BaseModel):
     """Payload schema for submitting operator hypothesis feedback."""
@@ -219,6 +216,7 @@ async def ingest_peering_telemetry(
         sha256_audit_receipt=f"CLR-PEER-{hex(abs(hash(packet.timestamp + packet.service)))[2:10].upper()}",
     )
 
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -232,8 +230,6 @@ app.add_middleware(
 app.include_router(webhook_router)
 
 
-<<<<<<< HEAD
-=======
 @app.get("/status")
 async def get_public_status():
     return FileResponse("static/status.html")
@@ -243,10 +239,26 @@ async def get_public_status():
 def get_healthz() -> dict[str, str]:
     """Return backend health check metadata."""
     return {"status": "healthy", "service": "clarion-backend"}
->>>>>>> origin/main
 
 
 
+
+
+@app.get("/api/v1/telemetry/live")
+def get_live_telemetry():
+    """Returns real-time host hardware metrics for SRE monitoring."""
+    return {
+        "cpu_usage_percent": psutil.cpu_percent(interval=0.1),
+        "memory": {
+            "total_gb": round(psutil.virtual_memory().total / (1024**3), 2),
+            "used_gb": round(psutil.virtual_memory().used / (1024**3), 2),
+            "percent": psutil.virtual_memory().percent
+        },
+        "disk": {
+            "percent": psutil.disk_usage('/').percent
+        },
+        "status": "healthy"
+    }
 
 
 @app.get("/api/warmup")
@@ -327,7 +339,7 @@ def get_investigate(
 
 @app.get("/api/dossier")
 def get_dossier(
-    scenario: str = Query("festival_deadlock", description="Incident scenario to investigate"),
+    scenario: str = Query("festival_deadlock", description="Scenario to investigate"),
     backend: str = Query("csv", description="Tabular adapter backend"),
 ) -> dict[str, Any]:
     """Generate auditable incident dossier with markdown text and cryptographic digest."""
@@ -349,7 +361,7 @@ def get_dossier(
 
 @app.get("/api/dossier.md")
 def get_dossier_file(
-    scenario: str = Query("festival_deadlock", description="Incident scenario to investigate"),
+    scenario: str = Query("festival_deadlock", description="Scenario to investigate"),
     backend: str = Query("csv", description="Tabular adapter backend"),
 ) -> Response:
     """Download auditable incident dossier as raw markdown document."""
@@ -371,7 +383,7 @@ def get_dossier_file(
 
 @app.get("/api/robustness")
 def get_robustness(
-    scenario: str = Query("festival_deadlock", description="Incident scenario to analyze"),
+    scenario: str = Query("festival_deadlock", description="Scenario to analyze"),
     backend: str = Query("csv", description="Tabular adapter backend"),
 ) -> dict[str, Any]:
     """Execute Monte Carlo prior and likelihood ratio perturbation robustness test."""
@@ -417,11 +429,13 @@ def post_feedback(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid feedback_type '{req.feedback_type}'. Must be 'confirm' or 'reject'.",
         )
+
     save_feedback(
         dossier_id=req.dossier_id,
         hypothesis_id=req.hypothesis_id,
         feedback_type=req.feedback_type,
     )
+
     return {
         "status": "recorded",
         "dossier_id": req.dossier_id,
@@ -436,6 +450,7 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
     """Ingest custom telemetry file (.json or .csv), execute causal analysis, and record incident."""
     filename = file.filename or "unknown_upload"
     lower_name = filename.lower()
+
     if not (lower_name.endswith(".json") or lower_name.endswith(".csv")):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -447,67 +462,88 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
     # Defensive integration with SU's upload_parser
     parsed_data: Any = None
     parser_succeeded = False
+
     try:
         import importlib
 
         parser_mod = importlib.import_module("data.upload_parser")
+
         for fn_name in ["parse_upload", "parse_telemetry", "parse_file"]:
             parse_fn = getattr(parser_mod, fn_name, None)
+
             if callable(parse_fn):
                 try:
                     parsed_data = parse_fn(file)
                     parser_succeeded = True
                     break
+
                 except TypeError:
                     try:
                         parsed_data = parse_fn(content_bytes)
                         parser_succeeded = True
                         break
+
                     except TypeError:
-                        parsed_data = parse_fn(content_bytes.decode("utf-8-sig", errors="replace"))
+                        parsed_data = parse_fn(
+                            content_bytes.decode("utf-8-sig", errors="replace")
+                        )
                         parser_succeeded = True
                         break
+
                 except Exception:
                     continue
+
     except (ImportError, Exception):
         parser_succeeded = False
 
     # Safe fallback if SU's parser is missing or fails
     if not parser_succeeded or parsed_data is None:
         text_content = content_bytes.decode("utf-8-sig", errors="replace")
+
         if lower_name.endswith(".json"):
             try:
                 parsed_data = json.loads(text_content)
+
             except Exception as exc:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid JSON content in uploaded file: {str(exc)}",
                 ) from exc
+
         elif lower_name.endswith(".csv"):
             metric_mapping: dict[str, Any] = {}
+
             try:
                 reader = csv.reader(io.StringIO(text_content))
                 lines = [row for row in reader if row]
+
                 if lines:
                     is_kv = False
+
                     if len(lines[0]) == 2 and any(
-                        lines[0][0].lower().startswith(x) for x in ("metric", "key", "name", "kpi")
+                        lines[0][0].lower().startswith(x)
+                        for x in ("metric", "key", "name", "kpi")
                     ):
                         for row in lines[1:]:
                             if len(row) >= 2:
                                 k, v = row[0].strip(), row[1].strip()
+
                                 try:
                                     metric_mapping[k] = float(v)
                                 except ValueError:
                                     metric_mapping[k] = v
+
                         is_kv = True
+
                     elif all(len(row) == 2 for row in lines):
                         for row in lines:
                             k, v = row[0].strip(), row[1].strip()
+
                             try:
                                 metric_mapping[k] = float(v)
                             except ValueError:
                                 metric_mapping[k] = v
+
                         is_kv = True
 
                     if not is_kv:
@@ -516,8 +552,10 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
                         parsed_data = dict_rows
                     else:
                         parsed_data = metric_mapping
+
                 else:
                     parsed_data = {}
+
             except Exception as exc:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -526,11 +564,13 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
 
     # Extract metrics dictionary from parsed structure
     extracted_metrics: dict[str, Any] = {}
+
     if isinstance(parsed_data, dict):
         if "metrics" in parsed_data and isinstance(parsed_data["metrics"], dict):
             extracted_metrics = parsed_data["metrics"]
         else:
             extracted_metrics = parsed_data
+
     elif isinstance(parsed_data, list) and parsed_data and isinstance(parsed_data[-1], dict):
         extracted_metrics = parsed_data[-1]
 
@@ -541,24 +581,39 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
         p502 = float(metrics.get("payment_502_count", 0.0) or 0.0)
         rider_rej = float(metrics.get("rider_rejection_rate", 0.0) or 0.0)
 
-        if db_locks > 5.0 or alloc_lat > 2.0 or metrics.get("enable_dynamic_batching_v2") is not None:
+        if (
+            db_locks > 5.0
+            or alloc_lat > 2.0
+            or metrics.get("enable_dynamic_batching_v2") is not None
+        ):
             return (
                 "Batching DB-Lock Deadlock",
                 0.7942,
                 "Multi-order batching triggered database lock contention and worker allocation exhaustion.",
             )
-        if p502 > 100.0 or "gateway" in str(metrics).lower() or "payment" in str(metrics).lower():
+
+        if (
+            p502 > 100.0
+            or "gateway" in str(metrics).lower()
+            or "payment" in str(metrics).lower()
+        ):
             return (
                 "Payment Gateway Outage",
                 0.8850,
                 "Payment gateway outage indicated by elevated 502 error rates or gateway latency.",
             )
-        if rider_rej > 0.20 or "weather" in str(metrics).lower() or "rain" in str(metrics).lower():
+
+        if (
+            rider_rej > 0.20
+            or "weather" in str(metrics).lower()
+            or "rain" in str(metrics).lower()
+        ):
             return (
                 "Weather / Rider Shortage",
                 0.4500,
                 "Severe weather elevated fleet rider rejection rates and reduced delivery capacity.",
             )
+
         return (
             "Batching DB-Lock Deadlock",
             0.7500,
@@ -574,6 +629,7 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
         import importlib
 
         engine_mod = None
+
         for mod_name in ["core.engine", "engine"]:
             try:
                 engine_mod = importlib.import_module(mod_name)
@@ -583,25 +639,60 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
 
         if engine_mod and hasattr(engine_mod, "run_investigation"):
             config_path = Path("config.json")
+
             if config_path.exists():
                 with open(config_path, "r", encoding="utf-8") as f:
                     cfg = json.load(f)
+
                 adapters_mod = importlib.import_module("adapters")
                 data_dir = Path("data")
+
                 if data_dir.exists():
-                    registry = adapters_mod.build_registry(data_dir, backend="csv")
-                    investigation = engine_mod.run_investigation(registry, cfg)
-                    if investigation and "ranked" in investigation and investigation["ranked"]:
+                    registry = adapters_mod.build_registry(
+                        data_dir,
+                        backend="csv"
+                    )
+
+                    investigation = engine_mod.run_investigation(
+                        registry,
+                        cfg
+                    )
+
+                    if (
+                        investigation
+                        and "ranked" in investigation
+                        and investigation["ranked"]
+                    ):
                         top_hyp = investigation["ranked"][0]
-                        root_cause = top_hyp.get("name", root_cause)
-                        confidence = float(top_hyp.get("confidence", confidence))
-                        summary = f"Root cause identified as {root_cause} with {confidence * 100.0:.1f}% confidence."
+
+                        root_cause = top_hyp.get(
+                            "name",
+                            root_cause
+                        )
+
+                        confidence = float(
+                            top_hyp.get(
+                                "confidence",
+                                confidence
+                            )
+                        )
+
+                        summary = (
+                            f"Root cause identified as {root_cause} "
+                            f"with {confidence * 100.0:.1f}% confidence."
+                        )
+
                         engine_details = {
                             "scenario": investigation.get("scenario"),
                             "anomaly": investigation.get("anomaly"),
-                            "ranked_count": len(investigation.get("ranked", [])),
-                            "engine_dossier_id": investigation.get("dossier_id"),
+                            "ranked_count": len(
+                                investigation.get("ranked", [])
+                            ),
+                            "engine_dossier_id": investigation.get(
+                                "dossier_id"
+                            ),
                         }
+
     except Exception:
         pass
 
@@ -636,167 +727,17 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
 
 # Mount static assets
 if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+    app.mount(
+        "/static",
+        StaticFiles(directory=STATIC_DIR),
+        name="static"
+    )
+
     vendor_dir = STATIC_DIR / "vendor"
+
     if vendor_dir.exists():
-        app.mount("/vendor", StaticFiles(directory=vendor_dir), name="vendor")
-
-
-
-
-app = FastAPI()
-
-def get_db():
-    return duckdb.connect("telemetry.db")
-
-@app.on_event("startup")
-def init_db():
-    """Runs DDL SQL commands when FastAPI starts up."""
-    con = get_db()
-    
-    # Run SQL setup commands
-    con.execute("""
-        CREATE TABLE IF NOT EXISTS system_telemetry (
-            timestamp TIMESTAMP,
-            gateway_name VARCHAR,
-            capture_success_pct DOUBLE,
-            compute_ms DOUBLE,
-            anomaly_detected BOOLEAN
-        );
-    """)
-    con.close()
-
-@app.get("/api/metrics")
-def get_metrics():
-    """API endpoint running SQL SELECT queries."""
-    con = get_db()
-    # Execute query and convert directly to dictionary or list
-    data = con.execute("SELECT * FROM system_telemetry ORDER BY timestamp DESC LIMIT 10").df().to_dict(orient="records")
-    con.close()
-    return {"metrics": data}
-
-
-def query_telemetry():
-    # Connect in read_only mode so data_ingestor.py can stream concurrently
-    con = duckdb.connect("telemetry.db", read_only=True)
-    data = con.execute("SELECT * FROM system_telemetry ORDER BY timestamp DESC LIMIT 10").fetchall()
-    con.close()
-    return data
-
-
-
-
-app = FastAPI()
-
-# Serve static files (index.html, status.html)
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/api/health")
-def health_check():
-    return {"status": "healthy"}
-
-@app.get("/api/investigate")
-def run_investigation(
-    scenario: str = Query("festival_deadlock"),
-    backend: str = Query("duckdb")
-):
-    """
-    Handles investigation requests triggered during boot / index.html startup.
-    """
-    # Connect to DuckDB telemetry store safely
-    try:
-        con = duckdb.connect("telemetry.db", read_only=True)
-        # Fetch the latest 10 rows to calculate health and diagnostic confidence
-        records = con.execute(
-            "SELECT * FROM system_telemetry ORDER BY timestamp DESC LIMIT 10"
-        ).df().to_dict(orient="records")
-        con.close()
-    except Exception:
-        records = []
-
-    return {
-        "status": "success",
-        "scenario": scenario,
-        "backend": backend,
-        "summary": {
-            "root_cause_probability": 0.94,
-            "suspect_node": "Clarion-US-East",
-            "telemetry_count": len(records)
-        },
-        "records": records
-    }
-
-# Add these general fallback endpoints to main.py if requested by index.html
-
-@app.get("/api/status")
-def get_status():
-    return {"status": "operational", "system": "Clarion"}
-
-@app.get("/api/telemetry")
-def get_telemetry():
-    return {"data": []}
-
-@app.get("/api/logs")
-def get_logs():
-    return {"logs": []}
-
-
-
-
-app = FastAPI()
-
-# Mount static directory for frontend
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/api/health")
-def health():
-    return {"status": "healthy"}
-
-@app.get("/api/investigate")
-def investigate(
-    scenario: str = Query(default="festival_deadlock"),
-    backend: str = Query(default="duckdb")
-):
-    try:
-        con = duckdb.connect("telemetry.db", read_only=True)
-        records = con.execute(
-            "SELECT * FROM system_telemetry ORDER BY timestamp DESC LIMIT 10"
-        ).df().to_dict(orient="records")
-        con.close()
-    except Exception:
-        records = []
-
-    return {
-        "status": "success",
-        "scenario": scenario,
-        "backend": backend,
-        "results": records
-    }
-
-# --- FIX FOR FRONTEND BOOT LOOP ---
-@app.get("/api/investigate")
-def run_investigation(
-    scenario: str = "festival_deadlock",
-    backend: str = "csv"
-):
-    try:
-        import duckdb
-        con = duckdb.connect("telemetry.db", read_only=True)
-        records = con.execute(
-            "SELECT * FROM system_telemetry ORDER BY timestamp DESC LIMIT 10"
-        ).df().to_dict(orient="records")
-        con.close()
-    except Exception:
-        records = []
-
-    return {
-        "status": "success",
-        "scenario": scenario,
-        "backend": backend,
-        "summary": {
-            "root_cause_probability": 0.94,
-            "suspect_node": "Clarion-US-East",
-            "telemetry_count": len(records)
-        },
-        "records": records
-    }
+        app.mount(
+            "/vendor",
+            StaticFiles(directory=vendor_dir),
+            name="vendor"
+        )
