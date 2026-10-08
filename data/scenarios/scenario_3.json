@@ -4,7 +4,11 @@
   "description": "High memory pressure on primary Redis cluster causes rapid key eviction, stale cache reads, overselling, and inventory reconciliation lockouts across darkstores.",
   "metadata": {
     "severity": "CRITICAL",
-    "affected_services": ["redis-cache-cluster", "inventory-service", "order-dispatch"],
+    "affected_services": [
+      "redis-cache-cluster",
+      "inventory-service",
+      "order-dispatch"
+    ],
     "time_window": "2026-10-08T14:00:00Z to 2026-10-08T15:30:00Z"
   },
   "telemetry": [
@@ -56,19 +60,82 @@
   "ledger_transactions": [
     {
       "transaction_id": "TXN-90214",
+      "order_id": "ORD-55410",
       "timestamp": "2026-10-08T14:12:05Z",
       "sku": "SKU-MILK-1L",
       "store_id": "DS-BLR-04",
+      "amount": 4.50,
       "status": "FAILED_OUT_OF_STOCK",
+      "refund_status": "AUTO_REFUND_COMPLETED",
       "refund_amount": 4.50
     },
     {
       "transaction_id": "TXN-90215",
+      "order_id": "ORD-55412",
       "timestamp": "2026-10-08T14:14:30Z",
       "sku": "SKU-BREAD-WHEAT",
       "store_id": "DS-BLR-04",
+      "amount": 2.20,
       "status": "FAILED_OUT_OF_STOCK",
+      "refund_status": "AUTO_REFUND_COMPLETED",
       "refund_amount": 2.20
+    },
+    {
+      "transaction_id": "TXN-90216",
+      "order_id": "ORD-55418",
+      "timestamp": "2026-10-08T14:16:10Z",
+      "sku": "SKU-EGGS-12PK",
+      "store_id": "DS-BLR-04",
+      "amount": 5.80,
+      "status": "FAILED_OUT_OF_STOCK",
+      "refund_status": "AUTO_REFUND_COMPLETED",
+      "refund_amount": 5.80
+    },
+    {
+      "transaction_id": "TXN-90217",
+      "order_id": "ORD-55422",
+      "timestamp": "2026-10-08T14:22:45Z",
+      "sku": "SKU-APPLES-1KG",
+      "store_id": "DS-BLR-04",
+      "amount": 3.75,
+      "status": "FAILED_OUT_OF_STOCK",
+      "refund_status": "AUTO_REFUND_PENDING",
+      "refund_amount": 3.75
+    }
+  ],
+  "support_tickets": [
+    {
+      "ticket_id": "TCK-4001",
+      "order_id": "ORD-55410",
+      "timestamp": "2026-10-08T14:13:30Z",
+      "customer_id": "CUST-8831",
+      "store_id": "DS-BLR-04",
+      "category": "ORDER_CANCELED_ITEMS_MISSING",
+      "priority": "HIGH",
+      "status": "RESOLVED_REFUNDED",
+      "customer_comment": "My delivery bag was missing 1L Milk bottles and order was partially canceled."
+    },
+    {
+      "ticket_id": "TCK-4002",
+      "order_id": "ORD-55412",
+      "timestamp": "2026-10-08T14:17:02Z",
+      "customer_id": "CUST-9014",
+      "store_id": "DS-BLR-04",
+      "category": "DISPATCH_REJECT",
+      "priority": "MEDIUM",
+      "status": "RESOLVED_REFUNDED",
+      "customer_comment": "Got an SMS notification saying Wheat Bread was out of stock after paying."
+    },
+    {
+      "ticket_id": "TCK-4003",
+      "order_id": "ORD-55418",
+      "timestamp": "2026-10-08T14:20:15Z",
+      "customer_id": "CUST-4122",
+      "store_id": "DS-BLR-04",
+      "category": "INVENTORY_DISCREPANCY",
+      "priority": "HIGH",
+      "status": "OPEN",
+      "customer_comment": "App displayed 12-pack eggs in stock, rider called saying the physical shelf is completely empty."
     }
   ]
 }
