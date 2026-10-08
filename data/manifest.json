@@ -1,12 +1,12 @@
 {
-  "scenario": "festival_deadlock",
+  "scenario": "gateway_outage",
   "seed": 42,
   "row_counts": {
     "telemetry": 211,
     "payment_ledger": 9507,
-    "fleet_events": 4573,
-    "support_tickets": 281,
-    "audit_log": 17
+    "fleet_events": 2929,
+    "support_tickets": 226,
+    "audit_log": 1
   },
   "timeframe": {
     "start": "2026-10-07 18:00:00",
