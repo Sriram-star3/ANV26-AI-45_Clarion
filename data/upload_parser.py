@@ -60,4 +60,4 @@ def parse_custom_json(file_bytes: bytes, table_name: str = "custom_telemetry", c
 
     conn.register(f"{table_name}_view", validated_df)
     conn.execute(f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM {table_name}_view")
-    return conn
+    return conn 
