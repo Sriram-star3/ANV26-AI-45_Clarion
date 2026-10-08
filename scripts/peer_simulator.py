@@ -14,16 +14,63 @@ BASE_URL = "http://localhost:8000"
 TELEMETRY_ENDPOINT = f"{BASE_URL}/api/v1/peering/telemetry"
 ALERT_ENDPOINT = f"{BASE_URL}/api/v1/webhook/alert"
 
-DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "scenario_3.json"
+# Built-in fallback so the script NEVER crashes if the file is missing
+FALLBACK_SCENARIO = {
+    "scenario_id": "scenario_3",
+    "title": "Redis Cache Eviction Surge causing Darkstore Inventory Stockouts",
+    "metadata": {
+        "severity": "CRITICAL",
+        "affected_services": ["redis-cache-cluster", "inventory-service", "order-dispatch"],
+        "time_window": "2026-10-08T14:00:00Z to 2026-10-08T15:30:00Z"
+    },
+    "telemetry": [
+        {"timestamp": "2026-10-08T14:05:00Z", "metric_name": "redis_memory_usage_ratio", "value": 0.96, "event_type": "threshold_breach"},
+        {"timestamp": "2026-10-08T14:10:00Z", "metric_name": "evicted_keys_per_second", "value": 14200.0, "event_type": "spike"},
+        {"timestamp": "2026-10-08T14:15:00Z", "metric_name": "inventory_db_connection_pool_saturation", "value": 99.4, "event_type": "exhaustion"},
+        {"timestamp": "2026-10-08T14:20:00Z", "metric_name": "darkstore_stockout_order_reject_rate", "value": 38.7, "event_type": "incident_impact"}
+    ],
+    "audit_logs": [
+        {"timestamp": "2026-10-08T14:02:11Z", "service": "cache-manager", "level": "WARN", "message": "Memory limit reached on redis-node-03; maxmemory-policy volatile-lru active."},
+        {"timestamp": "2026-10-08T14:08:45Z", "service": "inventory-sync", "level": "ERROR", "message": "Cache miss storm on key 'store_084:item_catalog'; falling back to direct Postgres read replica."},
+        {"timestamp": "2026-10-08T14:18:22Z", "service": "dispatch-router", "level": "CRITICAL", "message": "Stock reconciliation failure for Darkstore DS-BLR-04: reserved items unavailable on physical shelf."}
+    ]
+}
+
+
+def find_scenario_file() -> Path | None:
+    # 1. Check common relative locations
+    current_dir = Path(__file__).resolve().parent
+    project_root = current_dir.parent
+
+    search_candidates = [
+        project_root / "data" / "scenario_3.json",
+        project_root / "data" / "scenarips" / "scenario_3.json",
+        project_root / "scenario_3.json",
+        current_dir / "scenario_3.json"
+    ]
+
+    for path in search_candidates:
+        if path.is_file() and path.stat().st_size > 0:
+            return path
+
+    # 2. Dynamic recursive search across the project root
+    for matched_file in project_root.rglob("*scenario_3*.json"):
+        if matched_file.is_file() and matched_file.stat().st_size > 0:
+            return matched_file
+
+    return None
 
 
 def run_simulation(interval: float = 0.8):
-    if not DATA_PATH.exists():
-        print(f"[ERROR] Could not find scenario file at: {DATA_PATH}")
-        sys.exit(1)
+    target_file = find_scenario_file()
 
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
-        scenario = json.load(f)
+    if target_file:
+        print(f"[LOADED] Using scenario file: {target_file}")
+        with open(target_file, "r", encoding="utf-8") as f:
+            scenario = json.load(f)
+    else:
+        print("[NOTICE] scenario_3.json not found on disk. Falling back to built-in scenario payload.")
+        scenario = FALLBACK_SCENARIO
 
     scenario_id = scenario.get("scenario_id", "scenario_3")
     title = scenario.get("title", "Telemetry Simulation")
