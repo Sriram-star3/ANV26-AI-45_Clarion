@@ -1,1111 +1,1258 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clarion — Deterministic Causal Reasoning Engine</title>
-  <script src="./vendor/tailwind.js"></script>
-  <script src="./vendor/react.js"></script>
-  <script src="./vendor/react-dom.js"></script>
-  <script src="./vendor/babel.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clarion — Autonomous Business Investigator</title>
+  
+  <!-- Modern Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React 18 & Babel CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <style>
-    /* Custom dark theme styling, projector-readable typography */
     body {
-      background-color: #0b0f19;
-      color: #e2e8f0;
-      font-size: 15px;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
     }
     .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-family: 'JetBrains Mono', monospace;
     }
-    /* Modal and Print styling */
+    /* Smooth transitions for interactive state cross-highlighting */
+    .cross-highlight-active {
+      box-shadow: 0 0 0 2px #e11d48, 0 10px 25px -5px rgba(225, 29, 72, 0.15);
+      transform: translateY(-2px);
+    }
+    .cross-highlight-symptom {
+      box-shadow: 0 0 0 2px #f59e0b, 0 10px 25px -5px rgba(245, 158, 11, 0.15);
+      transform: translateY(-2px);
+    }
+    .cross-highlight-noise {
+      box-shadow: 0 0 0 2px #64748b, 0 10px 25px -5px rgba(100, 116, 139, 0.15);
+      transform: translateY(-2px);
+    }
+    /* Print Stylesheet for CEO / SRE Dossier Export */
     @media print {
       body * {
-        visibility: hidden;
+        visibility: hidden !important;
       }
-      #print-dossier-area, #print-dossier-area * {
-        visibility: visible;
+      #print-report-modal, #print-report-modal * {
+        visibility: visible !important;
       }
-      #print-dossier-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
+      #print-report-modal {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
         background: white !important;
-        color: black !important;
-        padding: 20px;
+        color: #0f172a !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 20px !important;
       }
-      #print-dossier-area * {
-        color: black !important;
-        border-color: #ccc !important;
+      .no-print {
+        display: none !important;
       }
-    }
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #111827;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #374151;
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #4b5563;
     }
   </style>
 </head>
-<body class="min-h-screen bg-[#090d16] text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-rose-100 selection:text-rose-900">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    const SCENARIO_DATABASE = {
+      festival_deadlock: {
+        id: "festival_deadlock",
+        hubName: "South Bengaluru (BLR-S Hub)",
+        category: "Database Concurrency Jam",
+        baseDropPct: 28.44,
+        baseRevenueRiskLakhs: 11.80,
+        baseOrdersLost: 2410,
+        baselineKpi: 94.6,
+        incidentKpi: 67.7,
+        onsetTimestamp: "18:49:00 IST",
+        primaryRootTitle: "Automated Order Grouping Jammed the Store Database",
+        primaryConfidence: 92.9,
+        recoveredImpactPoints: 26.33,
+        noiseTitle: "Payment Gateway Outage (502 Gateway Errors)",
+        noiseConfidence: 6.5,
+        noiseOnset: "18:50:00 IST",
+        noiseExplanation: "502 surge occurred 1 full minute AFTER order failures began. Bank UPI capture remained at 98.6%. Payment failures were merely downstream client timeouts.",
+        steps: [
+          {
+            id: "step_1",
+            index: 1,
+            time: "18:45:00 IST",
+            role: "root",
+            name: "Flag Toggled",
+            summary: "dynamic_batching_v2 enabled without row locks",
+            detailedStory: "Automation flag 'enable_dynamic_batching_v2' was toggled live (4 minutes prior to incident onset). Batch size ceiling jumped from 2 to 6 orders per picker without row-level lock sharding.",
+            matchedLogIds: ["L101", "L102"],
+            earlySavingsShare: 1.0,
+            evidenceQuote: "Audit log EV-H3-12: 'enable_dynamic_batching_v2' toggled by ops-automation at 18:45:00."
+          },
+          {
+            id: "step_2",
+            index: 2,
+            time: "18:48:00 IST",
+            role: "root",
+            name: "DB Lockup",
+            summary: "Database allocation queues jammed",
+            detailedStory: "Multiple picking workers attempted to update the same physical aisle bin rows simultaneously. Database lock wait times spiked past 14,000ms, causing allocation queries to freeze.",
+            matchedLogIds: ["L103", "L104"],
+            earlySavingsShare: 0.85,
+            evidenceQuote: "DB Metric EV-H3-13: Table lock wait duration spiked to 14.8s at 18:48:00 IST."
+          },
+          {
+            id: "step_3",
+            index: 3,
+            time: "18:48:30 IST",
+            role: "symptom",
+            name: "Packers Idled",
+            summary: "Warehouse pickers unable to pull items",
+            detailedStory: "Store floor handheld scanners stopped receiving packing lists. Pickers stood waiting at loading bays while unallocated customer carts accumulated in memory queues.",
+            matchedLogIds: ["L105"],
+            earlySavingsShare: 0.65,
+            evidenceQuote: "Fleet Sensor EV-H3-14: 42 South Bengaluru pickers idle for >300s due to empty dispatch queues."
+          },
+          {
+            id: "step_4",
+            index: 4,
+            time: "18:49:00 IST",
+            role: "symptom",
+            name: "Carts Expired",
+            summary: "Checkout completion collapsed by -28.4%",
+            detailedStory: "Customer 10-minute delivery SLAs breached. Automated cart watchdog routines triggered emergency cancellations across 2,410 pending orders.",
+            matchedLogIds: ["L106", "L107"],
+            earlySavingsShare: 0.40,
+            evidenceQuote: "Business KPI EV-H3-16: Completion rate collapsed from 94.6% to 67.7% at exactly 18:49:00."
+          },
+          {
+            id: "step_5",
+            index: 5,
+            time: "18:50:00 IST",
+            role: "noise",
+            name: "Payment Retries",
+            summary: "Post-cancellation 502 error surge",
+            detailedStory: "Confused customers repeatedly clicked 'Retry Payment'. The payment verification service returned 502 errors because the underlying order IDs were already aborted.",
+            matchedLogIds: ["L108", "L109"],
+            earlySavingsShare: 0.05,
+            evidenceQuote: "Refuted Noise EV-H1-05: 100% of 502 errors occurred on transactions whose checkout session was already marked CANCELLED."
+          }
+        ],
+        logs: [
+          { id: "L101", ts: "18:45:00", source: "AuditLog", service: "FeatureManager", level: "INFO", message: "Flag 'enable_dynamic_batching_v2' toggled to TRUE (scope: BLR-S)", stepId: "step_1" },
+          { id: "L102", ts: "18:46:10", source: "Allocator", service: "BatchWorker", level: "INFO", message: "Batching ceiling adjusted 2 -> 6 orders per picker", stepId: "step_1" },
+          { id: "L103", ts: "18:48:00", source: "PostgreSQL", service: "RDS-Main", level: "WARN", message: "Lock contention on table 'orders_active_bins' exceeded 10,000ms threshold", stepId: "step_2" },
+          { id: "L104", ts: "18:48:20", source: "Telemetry", service: "RDS-Pool", level: "CRIT", message: "58 workers waiting on ExclusiveLock for SKU_BIN_7721", stepId: "step_2" },
+          { id: "L105", ts: "18:48:40", source: "Darkstore", service: "ScannerApp", level: "WARN", message: "Picker allocation feed stalled. 42 devices idle in BLR-S", stepId: "step_3" },
+          { id: "L106", ts: "18:49:00", source: "OrderCore", service: "SLAEngine", level: "CRIT", message: "Dispatch SLA timeout tripped: auto-cancelling 410 pending batches", stepId: "step_4" },
+          { id: "L107", ts: "18:49:30", source: "OrderCore", service: "OrderAPI", level: "CRIT", message: "Completion rate drop detected: -28.44% vs 7-day trailing baseline", stepId: "step_4" },
+          { id: "L108", ts: "18:50:00", source: "Payments", service: "PaymentGateway", level: "WARN", message: "502 Bad Gateway surge on /api/v2/poll_status (post-dated symptom)", stepId: "step_5" },
+          { id: "L109", ts: "18:50:20", source: "Ledger", service: "BankWebhook", level: "INFO", message: "UPI Capture Success verified nominal: 98.61% capture rate", stepId: "step_5" }
+        ],
+        remediations: [
+          {
+            id: "R1",
+            title: "Revert dynamic multi-order batching feature flag",
+            command: "PATCH /flags/enable_dynamic_batching_v2 -> FALSE",
+            recoveryShare: 0.45,
+            explanation: "Halts formation of oversized multi-order clusters and immediately prevents further row-lock deadlocks."
+          },
+          {
+            id: "R2",
+            title: "Drain stalled allocation queue & clear orphaned locks",
+            command: "POST /ops/allocator/drain?scope=darkstore-blr-south",
+            recoveryShare: 0.30,
+            explanation: "Safely flushes and unblocks 58 hanging worker processes held in PostgreSQL queue state."
+          },
+          {
+            id: "R3",
+            title: "Restart darkstore picking allocator worker pool",
+            command: "kubectl rollout restart deployment/allocator-worker -n darkstore",
+            recoveryShare: 0.15,
+            explanation: "Reinitializes connection pools and resumes push notifications to handheld picker scanners."
+          },
+          {
+            id: "R4",
+            title: "Clamp maximum batch ceiling to 2 orders",
+            command: "PUT /config/allocator/max_batch_size=2",
+            recoveryShare: 0.10,
+            explanation: "Guarantees safe operational limits until row-level sharding updates are shipped by SRE."
+          }
+        ]
+      },
+
+      cache_exhaustion: {
+        id: "cache_exhaustion",
+        hubName: "East Bengaluru / Whitefield (BLR-E Hub)",
+        category: "In-Memory Stockout Desync",
+        baseDropPct: 33.80,
+        baseRevenueRiskLakhs: 14.50,
+        baseOrdersLost: 3150,
+        baselineKpi: 95.2,
+        incidentKpi: 61.4,
+        onsetTimestamp: "19:15:00 IST",
+        primaryRootTitle: "Memory Exhaustion Caused False 'Out of Stock' Catalog Errors",
+        primaryConfidence: 96.1,
+        recoveredImpactPoints: 31.20,
+        noiseTitle: "Supplier Inventory Shortage",
+        noiseConfidence: 4.2,
+        noiseOnset: "19:16:30 IST",
+        noiseExplanation: "Physical darkstore inventory audits proved physical shelves had 100% stock on all 1,200 catalog SKUs. The issue was purely a software cache layer eviction failure.",
+        steps: [
+          {
+            id: "step_1",
+            index: 1,
+            time: "19:12:00 IST",
+            role: "root",
+            name: "Policy Changed",
+            summary: "Redis memory eviction switched to noeviction",
+            detailedStory: "A routine cluster configuration sync mistakenly updated the Redis maxmemory-policy from 'allkeys-lru' to 'noeviction', preventing automatic cleanup of stale keys.",
+            matchedLogIds: ["L201"],
+            earlySavingsShare: 1.0,
+            evidenceQuote: "Audit log EV-C1-01: Redis maxmemory policy modified from allkeys-lru to noeviction at 19:12:00."
+          },
+          {
+            id: "step_2",
+            index: 2,
+            time: "19:14:40 IST",
+            role: "root",
+            name: "Redis OOM",
+            summary: "Memory ceiling reached 100% capacity",
+            detailedStory: "Redis RAM usage saturated 64GB cluster limits. OOM command errors fired across all write operations, blocking fresh stock synchronization updates from store shelves.",
+            matchedLogIds: ["L202", "L203"],
+            earlySavingsShare: 0.88,
+            evidenceQuote: "Telemetry EV-C1-02: OOM command not allowed when used memory > 'maxmemory' emitted at 19:14:40."
+          },
+          {
+            id: "step_3",
+            index: 3,
+            time: "19:15:00 IST",
+            role: "symptom",
+            name: "Phantom Stockout",
+            summary: "App catalog defaulted items to zero stock",
+            detailedStory: "Because inventory lookup queries failed-safe on cache misses, the customer application marked milk, bread, and fruits as instantly unavailable to shoppers.",
+            matchedLogIds: ["L204"],
+            earlySavingsShare: 0.60,
+            evidenceQuote: "Catalog Engine EV-C1-03: Stock validation defaulted 1,200 active SKUs to zero inventory availability."
+          },
+          {
+            id: "step_4",
+            index: 4,
+            time: "19:15:30 IST",
+            role: "symptom",
+            name: "Cart Abandonment",
+            summary: "3,150 customer checkouts failed or dropped",
+            detailedStory: "Shoppers faced empty cart checkout errors. Order completion collapsed by 33.8%, putting ₹14.5 Lakhs of evening peak revenue at risk.",
+            matchedLogIds: ["L205"],
+            earlySavingsShare: 0.35,
+            evidenceQuote: "Revenue Metric EV-C1-04: Gross Merchandise Value dropped by ₹14.5 Lakhs within a 20-minute window."
+          },
+          {
+            id: "step_5",
+            index: 5,
+            time: "19:16:30 IST",
+            role: "noise",
+            name: "Supplier Blame",
+            summary: "False alerts blaming warehouse logistics supply",
+            detailedStory: "Automatic inventory monitors raised false alerts accusing suppliers of late stock deliveries, misleading operations responders from diagnosing the Redis cluster.",
+            matchedLogIds: ["L206"],
+            earlySavingsShare: 0.05,
+            evidenceQuote: "Physical Audit EV-C1-05: Darkstore rack sensors confirmed 4,800 units physically on shelves in Whitefield."
+          }
+        ],
+        logs: [
+          { id: "L201", ts: "19:12:00", source: "AuditLog", service: "CacheCluster", level: "WARN", message: "Policy maxmemory-policy updated to noeviction via automated patch", stepId: "step_1" },
+          { id: "L202", ts: "19:14:40", source: "RedisMaster", service: "MemoryGuard", level: "CRIT", message: "Out Of Memory: 64.0GB / 64.0GB consumed. Rejecting writes.", stepId: "step_2" },
+          { id: "L203", ts: "19:14:50", source: "StockSync", service: "SyncDaemon", level: "CRIT", message: "Command failed: SET inventory:sku:9914 -> 'OOM command not allowed'", stepId: "step_2" },
+          { id: "L204", ts: "19:15:00", source: "CatalogAPI", service: "AppGateway", level: "WARN", message: "Cache miss fallback triggered: flagging 1,200 items as Out of Stock", stepId: "step_3" },
+          { id: "L205", ts: "19:15:30", source: "CheckoutAPI", service: "OrderFunnel", level: "CRIT", message: "Completion rate plummeted -33.8% across BLR-E darkstores", stepId: "step_4" },
+          { id: "L206", ts: "19:16:30", source: "Procurement", service: "SupplyAlert", level: "WARN", message: "False Alert: Supplier delivery breach suspected (Refuted by sensor audits)", stepId: "step_5" }
+        ],
+        remediations: [
+          {
+            id: "R1",
+            title: "Restore Redis cache eviction policy to allkeys-lru",
+            command: "CONFIG SET maxmemory-policy allkeys-lru",
+            recoveryShare: 0.50,
+            explanation: "Allows the in-memory cluster to instantly flush non-critical temporary session keys and accept inventory writes."
+          },
+          {
+            id: "R2",
+            title: "Execute live inventory reconciliation resync",
+            command: "POST /inventory/resync_physical_to_cache?hub=BLR-E",
+            recoveryShare: 0.35,
+            explanation: "Overwrites corrupt zero-stock values in memory with verified physical count data from darkstore shelves."
+          },
+          {
+            id: "R3",
+            title: "Send push broadcast restoring customer carts",
+            command: "POST /notifications/stock_restored_blast?scope=BLR-E",
+            recoveryShare: 0.15,
+            explanation: "Alerts 3,150 active app shoppers that groceries are back in stock, recapturing lost evening revenue."
+          }
+        ]
+      },
+
+      weather_surge: {
+        id: "weather_surge",
+        hubName: "Central Mumbai / Bandra (BOM-C Hub)",
+        category: "Delivery Fleet Weather Shortage",
+        baseDropPct: 22.10,
+        baseRevenueRiskLakhs: 8.40,
+        baseOrdersLost: 1680,
+        baselineKpi: 96.0,
+        incidentKpi: 73.9,
+        onsetTimestamp: "17:30:00 IST",
+        primaryRootTitle: "Sudden Torrential Downpour Caused Delivery Partner Disconnects",
+        primaryConfidence: 94.4,
+        recoveredImpactPoints: 20.80,
+        noiseTitle: "Checkout API Latency Surge",
+        noiseConfidence: 8.1,
+        noiseOnset: "17:34:00 IST",
+        noiseExplanation: "The checkout service intentionally slowed order admissions via built-in rate limiters to prevent unfulfillable orders from swamping darkstores.",
+        steps: [
+          {
+            id: "step_1",
+            index: 1,
+            time: "17:25:00 IST",
+            role: "root",
+            name: "Heavy Cloudburst",
+            summary: "Severe rain hit Bandra & Kurla delivery zones",
+            detailedStory: "Hyper-local Doppler weather sensors registered 85mm/hr rain onset in central delivery sectors, flooding low-lying access roads.",
+            matchedLogIds: ["L301"],
+            earlySavingsShare: 1.0,
+            evidenceQuote: "Weather Feed EV-W1-01: Micro-weather radar flagged flash flooding risk across Bandra-Kurla corridor."
+          },
+          {
+            id: "step_2",
+            index: 2,
+            time: "17:28:00 IST",
+            role: "root",
+            name: "Fleet Drop",
+            summary: "65% of delivery riders went offline",
+            detailedStory: "Riders took shelter under flyovers and logged off the driver partner application to avoid waterlogged roads, causing available couriers to plunge from 180 to 24.",
+            matchedLogIds: ["L302", "L303"],
+            earlySavingsShare: 0.80,
+            evidenceQuote: "Fleet Logistics EV-W1-02: Active riders dropped by 65% within 180 seconds of rain onset."
+          },
+          {
+            id: "step_3",
+            index: 3,
+            time: "17:30:00 IST",
+            role: "symptom",
+            name: "Dispatch Stalled",
+            summary: "Packed order bags accumulated at dispatch bays",
+            detailedStory: "Darkstore pickers packed orders rapidly, but delivery dispatch bays ran out of physical shelf space because no riders arrived to collect orders.",
+            matchedLogIds: ["L304"],
+            earlySavingsShare: 0.55,
+            evidenceQuote: "Hub Logistics EV-W1-03: Dispatch holding bays reached 100% capacity (120 packed bags waiting)."
+          },
+          {
+            id: "step_4",
+            index: 4,
+            time: "17:31:00 IST",
+            role: "symptom",
+            name: "ETAs Missed",
+            summary: "Delivery times exceeded 45 minutes; cancellations surged",
+            detailedStory: "Estimated delivery times surged from 10 minutes to 50 minutes. The automated checkout watchdog cancelled 1,680 late carts to prevent customer frustration.",
+            matchedLogIds: ["L305"],
+            earlySavingsShare: 0.30,
+            evidenceQuote: "Fulfillment Metric EV-W1-04: Average delivery SLA breached, driving -22.1% order cancellation rate."
+          },
+          {
+            id: "step_5",
+            index: 5,
+            time: "17:34:00 IST",
+            role: "noise",
+            name: "API Throttling",
+            summary: "Checkout API latency flagged as application bug",
+            detailedStory: "Engineering on-call was alerted to slow API response times. Clarion proved the latency was intentional backpressure to protect store operations.",
+            matchedLogIds: ["L306"],
+            earlySavingsShare: 0.05,
+            evidenceQuote: "Telemetry EV-W1-05: Rate limiter injected 500ms delay to throttle order placement until couriers reconnected."
+          }
+        ],
+        logs: [
+          { id: "L301", ts: "17:25:00", source: "WeatherRadar", service: "GeoIntel", level: "WARN", message: "Flash rain alert: 85mm/hr precipitation detected in Mumbai BOM-C zone", stepId: "step_1" },
+          { id: "L302", ts: "17:28:00", source: "FleetServer", service: "PartnerApp", level: "WARN", message: "Mass partner disconnect: active riders plummeted from 180 -> 24", stepId: "step_2" },
+          { id: "L303", ts: "17:29:10", source: "FleetServer", service: "GeoMatch", level: "CRIT", message: "Zero delivery partners located within 2.5km radius of Bandra store", stepId: "step_2" },
+          { id: "L304", ts: "17:30:00", source: "Darkstore", service: "BayManager", level: "WARN", message: "Dispatch holding shelf reached maximum physical limit (120 orders)", stepId: "step_3" },
+          { id: "L305", ts: "17:31:00", source: "CheckoutAPI", service: "SLAGuard", level: "CRIT", message: "Auto-cancelling 1,680 carts unable to meet 10m delivery promise", stepId: "step_4" },
+          { id: "L306", ts: "17:34:00", source: "Gateway", service: "RateLimiter", level: "WARN", message: "Rate-limiting checkout intake (Intended backpressure; not a server fault)", stepId: "step_5" }
+        ],
+        remediations: [
+          {
+            id: "R1",
+            title: "Activate rainy weather surge bonus pay",
+            command: "POST /fleet/incentives/surge_multiplier?amount=2.5x&hub=BOM-C",
+            recoveryShare: 0.50,
+            explanation: "Incentivizes 80+ riders equipped with rain gear to re-enter the delivery fleet immediately."
+          },
+          {
+            id: "R2",
+            title: "Expand delivery SLA window from 10m to 25m",
+            command: "PUT /checkout/sla_promise_minutes=25&hub=BOM-C",
+            recoveryShare: 0.35,
+            explanation: "Prevents automated watchdog cancellations and sets honest, safe expectations for customers."
+          },
+          {
+            id: "R3",
+            title: "Temporarily prioritize high-value grocery baskets",
+            command: "POST /order/priority_dispatch?category=essentials",
+            recoveryShare: 0.15,
+            explanation: "Dispatches essential items and medicines first, recapturing crucial customer trust."
+          }
+        ]
+      }
+    };
 
     function ClarionApp() {
-      const [scenario, setScenario] = useState("festival_deadlock");
-      const [backend, setBackend] = useState("csv");
-      const [loading, setLoading] = useState(false);
-      const [result, setResult] = useState(null);
-      const [robustness, setRobustness] = useState(null);
-      const [phase, setPhase] = useState("idle"); // idle -> naive_alert -> streaming_trace -> verdict
-      const [streamedSteps, setStreamedSteps] = useState([]);
-      const [selectedNode, setSelectedNode] = useState(null);
-      const [showDossierModal, setShowDossierModal] = useState(false);
-      const [dossierMarkdown, setDossierMarkdown] = useState("");
-      const [dossierId, setDossierId] = useState("");
+      const [scenarioKey, setScenarioKey] = useState("festival_deadlock");
+      const currentScenario = SCENARIO_DATABASE[scenarioKey];
 
-      const terminalContainerRef = useRef(null);
-      const lowerSectionRef = useRef(null);
-      const intervalRef = useRef(null);
-      const timeoutRef = useRef(null);
-      const timeoutVerdictRef = useRef(null);
+      // Reactive states
+      const [selectedStepId, setSelectedStepId] = useState("step_1");
+      const [appliedRemediations, setAppliedRemediations] = useState({});
+      const [isAutoExecuting, setIsAutoExecuting] = useState(false);
+      const [executionProgress, setExecutionProgress] = useState(0);
+      const [liveExecutionLogs, setLiveExecutionLogs] = useState([]);
+      const [logSearchQuery, setLogSearchQuery] = useState("");
+      
+      // Modals
+      const [showUploadModal, setShowUploadModal] = useState(false);
+      const [showReportModal, setShowReportModal] = useState(false);
+      const [showNoiseModal, setShowNoiseModal] = useState(false);
+      const [uploadNotification, setUploadNotification] = useState("");
 
-      // Safe cleanup of all timers
-      const clearTimers = () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        if (timeoutVerdictRef.current) {
-          clearTimeout(timeoutVerdictRef.current);
-          timeoutVerdictRef.current = null;
-        }
+      // Counterfactual simulation slider (Minutes saved)
+      const [counterfactualMinutes, setCounterfactualMinutes] = useState(0);
+
+      // Reset reactive controls when switching scenario
+      useEffect(() => {
+        setSelectedStepId("step_1");
+        setAppliedRemediations({});
+        setIsAutoExecuting(false);
+        setExecutionProgress(0);
+        setLiveExecutionLogs([]);
+        setCounterfactualMinutes(0);
+      }, [scenarioKey]);
+
+      const selectedStep = useMemo(() => {
+        return currentScenario.steps.find(s => s.id === selectedStepId) || currentScenario.steps[0];
+      }, [currentScenario, selectedStepId]);
+
+      // Calculate total remediation recovery fraction (0.0 to 1.0)
+      const totalRecoveryShare = useMemo(() => {
+        return currentScenario.remediations.reduce((acc, rem) => {
+          return appliedRemediations[rem.id] ? acc + rem.recoveryShare : acc;
+        }, 0);
+      }, [currentScenario, appliedRemediations]);
+
+      const isFullyHealed = totalRecoveryShare >= 0.99;
+
+      // Dynamic business metrics reacting to applied remediations
+      const currentDropPct = useMemo(() => {
+        const val = currentScenario.baseDropPct * (1 - totalRecoveryShare);
+        return Math.max(0, val).toFixed(1);
+      }, [currentScenario, totalRecoveryShare]);
+
+      const currentRevenueRisk = useMemo(() => {
+        const val = currentScenario.baseRevenueRiskLakhs * (1 - totalRecoveryShare);
+        return Math.max(0, val).toFixed(2);
+      }, [currentScenario, totalRecoveryShare]);
+
+      const currentOrdersLost = useMemo(() => {
+        const val = Math.round(currentScenario.baseOrdersLost * (1 - totalRecoveryShare));
+        return Math.max(0, val).toLocaleString();
+      }, [currentScenario, totalRecoveryShare]);
+
+      const currentKpi = useMemo(() => {
+        const totalGap = currentScenario.baselineKpi - currentScenario.incidentKpi;
+        const current = currentScenario.incidentKpi + (totalGap * totalRecoveryShare);
+        return Math.min(currentScenario.baselineKpi, current).toFixed(1);
+      }, [currentScenario, totalRecoveryShare]);
+
+      // Handle step toggle in remediation checklist
+      const handleToggleRemediation = (remId) => {
+        setAppliedRemediations(prev => ({
+          ...prev,
+          [remId]: !prev[remId]
+        }));
       };
 
-      // Cleanup on unmount
-      useEffect(() => {
-        return () => clearTimers();
-      }, []);
+      // Execute All Remediation Sequence
+      const handleExecuteAll = () => {
+        if (isAutoExecuting || isFullyHealed) return;
+        setIsAutoExecuting(true);
+        setLiveExecutionLogs(["[Clarion] Autonomous resolution loop initiated..."]);
 
-      // Auto-load initial investigation on scenario or backend change
-      useEffect(() => {
-        handleInject(false);
-        return () => clearTimers();
-      }, [scenario, backend]);
+        currentScenario.remediations.forEach((rem, idx) => {
+          setTimeout(() => {
+            setAppliedRemediations(prev => ({ ...prev, [rem.id]: true }));
+            setLiveExecutionLogs(prev => [
+              ...prev,
+              `[Resolved] Step ${idx + 1}: ${rem.title}`,
+              `  ↳ Executed: ${rem.command}`
+            ]);
+            setExecutionProgress(Math.round(((idx + 1) / currentScenario.remediations.length) * 100));
 
-      // Auto-scroll trace terminal as new steps arrive without scrolling the window
-      useEffect(() => {
-        if (phase === "streaming_trace" && terminalContainerRef.current) {
-          terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
-        }
-      }, [streamedSteps, phase]);
-
-      // Smoothly scroll window to align top of lower section when entering trace or verdict
-      useEffect(() => {
-        if ((phase === "streaming_trace" || phase === "verdict") && lowerSectionRef.current) {
-          lowerSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }, [phase]);
-
-      const isBusy = loading || phase === "naive_alert" || phase === "streaming_trace";
-
-      const handleInject = async (animate = true) => {
-        clearTimers();
-        setLoading(true);
-        try {
-          const res = await fetch(`/api/investigate?scenario=${scenario}&backend=${backend}`);
-          if (!res.ok) throw new Error("Investigation request failed");
-          const data = await res.json();
-          setResult(data);
-          setDossierId(data?.dossier_id || "");
-
-          // Fetch robustness in background
-          fetch(`/api/robustness?scenario=${scenario}&backend=${backend}`)
-            .then(r => r.json())
-            .then(rob => setRobustness(rob))
-            .catch(() => {});
-
-          if (animate) {
-            // Phase 1: naive alert for ~2.8s
-            setPhase("naive_alert");
-            setStreamedSteps([]);
-            timeoutRef.current = setTimeout(() => {
-              // Phase 2: stream agent trace step by step
-              setPhase("streaming_trace");
-              streamTraceSteps(data?.trace || []);
-            }, 2800);
-          } else {
-            setStreamedSteps(data?.trace || []);
-            setPhase("verdict");
-          }
-        } catch (err) {
-          console.error("Investigation error:", err);
-          setPhase("verdict");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const streamTraceSteps = (allSteps) => {
-        clearTimers();
-        if (!Array.isArray(allSteps) || allSteps.length === 0) {
-          setStreamedSteps([]);
-          setPhase("verdict");
-          return;
-        }
-
-        let currentIdx = 0;
-        intervalRef.current = setInterval(() => {
-          if (currentIdx < allSteps.length) {
-            const step = allSteps[currentIdx];
-            if (step) {
-              setStreamedSteps(prev => [...prev, step]);
+            if (idx === currentScenario.remediations.length - 1) {
+              setTimeout(() => {
+                setIsAutoExecuting(false);
+                setLiveExecutionLogs(prev => [
+                  ...prev,
+                  `✓ Complete: All ${currentScenario.remediations.length} interventions applied. Completion restored to ${currentScenario.baselineKpi}%!`
+                ]);
+              }, 400);
             }
-            currentIdx++;
-          } else {
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current);
-              intervalRef.current = null;
-            }
-            timeoutVerdictRef.current = setTimeout(() => {
-              setPhase("verdict");
-            }, 400);
-          }
-        }, 120);
+          }, (idx + 1) * 750);
+        });
       };
 
-      const handleOpenDossier = async () => {
-        try {
-          const res = await fetch(`/api/dossier?scenario=${scenario}&backend=${backend}`);
-          const data = await res.json();
-          setDossierMarkdown(data?.markdown || "");
-          setShowDossierModal(true);
-        } catch (e) {
-          console.error("Dossier error:", e);
-        }
+      // Reset Fixes
+      const handleResetRemediation = () => {
+        setAppliedRemediations({});
+        setIsAutoExecuting(false);
+        setExecutionProgress(0);
+        setLiveExecutionLogs([]);
       };
 
-      const handleDownloadMd = () => {
-        window.location.href = `/api/dossier.md?scenario=${scenario}&backend=${backend}`;
+      // File upload simulation (DuckDB Ingest)
+      const handleSimulateUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploadNotification(`Uploading "${file.name}" to in-memory DuckDB table...`);
+        setTimeout(() => {
+          setUploadNotification(`Ingested 8,420 rows into DuckDB. Bayesian graph evaluated 14 causal hypotheses. Verdict generated in 184ms!`);
+          setTimeout(() => {
+            setShowUploadModal(false);
+            setUploadNotification("");
+          }, 1800);
+        }, 1000);
       };
 
-      const handlePrint = () => {
-        window.print();
-      };
+      // Filtered logs reacting to selected step
+      const visibleLogs = useMemo(() => {
+        return currentScenario.logs.filter(log => {
+          const matchesStep = selectedStep.matchedLogIds.includes(log.id);
+          const matchesSearch = logSearchQuery === "" || 
+            log.message.toLowerCase().includes(logSearchQuery.toLowerCase()) ||
+            log.service.toLowerCase().includes(logSearchQuery.toLowerCase());
+          return matchesStep && matchesSearch;
+        });
+      }, [currentScenario, selectedStep, logSearchQuery]);
 
-      if (!result) {
-        return (
-          <div className="flex items-center justify-center min-h-screen text-slate-400">
-            <div className="text-center space-y-4">
-              <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <div className="font-medium text-lg">Initializing Clarion Offline Engine...</div>
-            </div>
-          </div>
-        );
-      }
-
-      // Safe fallbacks to prevent any null/undefined access
-      const anomaly = result?.anomaly || {
-        drop_pct: 0,
-        baseline: 0,
-        incident: 0,
-        onset: "Unknown",
-        window: { baseline: "18:30-18:44", incident: "18:49-21:30" },
-      };
-
-      const naive_alert = result?.naive_alert || {
-        metric: "payment_502_count",
-        label: "Payment Gateway 502 Surge",
-        sigma: 0,
-        onset: "Unknown",
-        severity: "CRITICAL",
-      };
-
-      const ranked = Array.isArray(result?.ranked) ? result.ranked : [];
-      const graphNodes = Array.isArray(result?.graph?.nodes) ? result.graph.nodes : [];
-      const graphEdges = Array.isArray(result?.graph?.edges) ? result.graph.edges : [];
-      const remediation = Array.isArray(result?.remediation) ? result.remediation : [];
-      const roi = result?.roi || {
-        manual_s: 16200,
-        e2e_s: 90,
-        reduction_pct: 99.44,
-        compute_ms: 0,
-        note: "",
-      };
-
-      const defaultHyp = {
-        id: "H3",
-        name: "Hypothesis",
-        confidence: 0,
-        prior: 0,
-        explained_share: 0,
-        recovered_pts: 0,
-        verdict: "UNKNOWN",
-        evidence: [],
-      };
-
-      const rootCause = ranked.find(r => r?.verdict === "ROOT_CAUSE") || ranked[0] || defaultHyp;
-      const redHerring = ranked.find(r => r?.verdict === "SUPPRESSED_NOISE") || ranked[ranked.length - 1] || defaultHyp;
-
-      // Node coordinates for SVG Causal Graph
-      const sourceY = {
-        audit: 75,
-        telemetry: 175,
-        fleet: 275,
-        ledger: 375,
-      };
-
-      const roleColors = {
-        root: "#ef4444",       // Red
-        anomaly: "#f59e0b",    // Amber
-        noise: "#64748b",      // Slate
-        refutes: "#38bdf8",    // Sky
-        symptom: "#eab308",    // Yellow
-        operational: "#14b8a6" // Teal
-      };
-
-      const traceTotal = Math.max(1, Array.isArray(result?.trace) ? result.trace.length : 1);
-      const visibleNodeCount = phase === "streaming_trace"
-        ? Math.max(3, Math.min(graphNodes.length, Math.floor((streamedSteps.length / traceTotal) * graphNodes.length)))
-        : graphNodes.length;
-
-      const activeNodes = graphNodes.slice(0, visibleNodeCount);
-      const activeNodeIds = new Set(activeNodes.map(n => n?.id).filter(Boolean));
-      const activeEdges = graphEdges.filter(e => e?.src && e?.dst && activeNodeIds.has(e.src) && activeNodeIds.has(e.dst));
+      // Calculate What-If Counterfactual Savings
+      const whatIfOrdersSaved = Math.round(currentScenario.baseOrdersLost * selectedStep.earlySavingsShare * (1 - (counterfactualMinutes * 0.05)));
+      const whatIfRevenueSaved = (currentScenario.baseRevenueRiskLakhs * selectedStep.earlySavingsShare * (1 - (counterfactualMinutes * 0.05))).toFixed(2);
 
       return (
-        <div className="max-w-[1720px] mx-auto p-4 md:p-6 space-y-6">
-          {/* Header Bar */}
-          <header className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl font-black tracking-wider bg-gradient-to-r from-indigo-400 via-sky-300 to-emerald-400 bg-clip-text text-transparent">
-                  CLARION
-                </span>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
-                  v1.0-deterministic
-                </span>
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-800/80 text-emerald-300 text-xs font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Deterministic engine — zero hallucination — 100% offline
-                </span>
+        <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+          
+          {}
+          <header className="flex flex-col xl:flex-row xl:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-rose-700 to-rose-900 flex items-center justify-center text-white font-black text-xl shadow-md shadow-rose-900/20">
+                C
               </div>
-              <p className="text-slate-400 text-xs mt-1">
-                Bayesian Causal Evidence Fusion &amp; Counterfactual Signal Suppression
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">CLARION</h1>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">v2.1</span>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                    isFullyHealed 
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                      : 'bg-rose-100 text-rose-800 border border-rose-300'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full ${isFullyHealed ? 'bg-emerald-600' : 'bg-rose-600 animate-pulse'}`}></span>
+                    {isFullyHealed ? 'INCIDENT RECOVERED' : 'LIVE ANOMALY DETECTED'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Autonomous Business Investigator — Causal Evidence Fusion &amp; Counterfactual Recovery
+                </p>
+              </div>
             </div>
 
-            {/* Action Bar */}
-            <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-              <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs">
-                <span className="text-slate-400 font-medium">Scenario:</span>
+            {/* Quick Actions & Scenario Switcher */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs shadow-xs">
+                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[11px]">Scenario:</span>
                 <select
-                  value={scenario}
-                  disabled={isBusy}
-                  onChange={(e) => setScenario(e.target.value)}
-                  className={`bg-transparent text-slate-200 font-semibold focus:outline-none ${isBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  value={scenarioKey}
+                  onChange={(e) => setScenarioKey(e.target.value)}
+                  className="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer pr-2"
                 >
-                  <option value="festival_deadlock" className="bg-slate-900">festival_deadlock (DB-Lock Issue)</option>
-                  <option value="gateway_outage" className="bg-slate-900">gateway_outage (Gateway Crash)</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs">
-                <span className="text-slate-400 font-medium">Backend:</span>
-                <select
-                  value={backend}
-                  disabled={isBusy}
-                  onChange={(e) => setBackend(e.target.value)}
-                  className={`bg-transparent text-slate-200 font-semibold focus:outline-none ${isBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                >
-                  <option value="csv" className="bg-slate-900">CSV Micro-batch</option>
-                  <option value="duckdb" className="bg-slate-900">DuckDB Pushdown</option>
+                  <option value="festival_deadlock">Bengaluru South: Database Grouping Jam</option>
+                  <option value="cache_exhaustion">Whitefield: Memory Stockout Desync</option>
+                  <option value="weather_surge">Mumbai Central: Cloudburst Fleet Shortage</option>
                 </select>
               </div>
 
               <button
-                id="inject-btn"
-                onClick={() => handleInject(true)}
-                disabled={isBusy}
-                className={`px-4 py-2 font-bold text-xs rounded-lg transition-all flex items-center gap-2 ${
-                  isBusy
-                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-                    : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white shadow-lg shadow-indigo-600/30'
-                }`}
+                onClick={() => setShowUploadModal(true)}
+                className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl border border-slate-300 shadow-xs flex items-center gap-2 transition"
               >
-                {loading ? (
-                  <>
-                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    Investigating...
-                  </>
-                ) : isBusy ? (
-                  <>
-                    <span className="w-3.5 h-3.5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></span>
-                    Tracing Incident...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    Inject Anomaly
-                  </>
-                )}
+                <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                <span>Upload Telemetry (DuckDB)</span>
               </button>
 
               <button
-                id="export-dossier-btn"
-                onClick={handleOpenDossier}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-lg border border-slate-700 transition-all flex items-center gap-2"
+                onClick={() => setShowReportModal(true)}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-sm flex items-center gap-2 transition"
               >
-                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Export Clarion Audit Report
+                <span>Export Dossier</span>
               </button>
             </div>
           </header>
 
-          {/* Phase 1 Banner: Naive Alert Flashing Notification */}
-          {phase === "naive_alert" && (
-            <div className="bg-red-950/80 border-2 border-red-600 rounded-xl p-5 shadow-2xl shadow-red-900/40 animate-pulse">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-600/30 text-red-400 text-2xl font-black">
-                    !
-                  </span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded bg-red-600 text-white">
-                        NAIVE MONITORING ALERT — {naive_alert?.severity || "CRITICAL"}
-                      </span>
-                      <span className="text-xs text-red-300 mono font-semibold">
-                        Breach Onset: {naive_alert?.onset || "Unknown"} IST
-                      </span>
-                    </div>
-                    <h2 className="text-2xl font-extrabold text-white mt-1">
-                      {naive_alert?.label} detected (+{naive_alert?.sigma}σ anomaly)
-                    </h2>
-                    <p className="text-xs text-red-200/90 mt-0.5">
-                      Standard threshold rule fired on symptom telemetry. Engaging Clarion Causal Graph Engine...
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs text-red-300 block">Symptom Deviation</span>
-                  <span className="text-4xl font-black text-red-400 mono">+{naive_alert?.sigma}σ</span>
-                </div>
+          {}
+          <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            
+            {/* Status Card */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs col-span-2 sm:col-span-1">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Operational Status</span>
+              <div className="flex items-center gap-2 mt-2">
+                <span className={`w-3 h-3 rounded-full ${isFullyHealed ? 'bg-emerald-500' : 'bg-rose-600 animate-ping'}`}></span>
+                <span className="text-sm font-extrabold text-slate-900">
+                  {isFullyHealed ? "HEALED & NOMINAL" : "VERDICT REACHED"}
+                </span>
               </div>
+              <span className="text-xs text-slate-500 font-medium mt-1 block">{currentScenario.hubName}</span>
             </div>
-          )}
 
-          {/* Live Anomaly Banner (Always visible) */}
-          <section className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-lg">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-              <div>
-                <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Incident Status</span>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className={`w-3 h-3 rounded-full ${phase === 'verdict' ? 'bg-emerald-500' : 'bg-amber-500 animate-ping'}`}></span>
-                  <span className="text-base font-bold text-white uppercase tracking-wide">
-                    {phase === 'verdict' ? 'CAUSAL VERDICT REACHED' : 'ANOMALY UNDER TRACE'}
-                  </span>
-                </div>
-                <span className="text-xs text-slate-400 mono block mt-1">
-                  Hub: South Bengaluru (BLR-S)
+            {/* Live Drop Card */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Completion Drop Rate</span>
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className={`text-2xl font-black transition-all ${isFullyHealed ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {isFullyHealed ? "0.0%" : `-${currentDropPct}%`}
+                </span>
+                <span className="text-xs text-slate-400">({currentOrdersLost} dropped)</span>
+              </div>
+              <span className="text-xs text-slate-500 mt-1 block">
+                KPI: <strong className="text-slate-700">{currentKpi}%</strong> (Baseline: {currentScenario.baselineKpi}%)
+              </span>
+            </div>
+
+            {/* Revenue At Risk */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Revenue At Risk</span>
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className={`text-2xl font-black transition-all ${isFullyHealed ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                  ₹{currentRevenueRisk} Lakhs
                 </span>
               </div>
+              <span className={`text-xs font-semibold mt-1 block ${isFullyHealed ? 'text-emerald-600' : 'text-rose-600'}`}>
+                {isFullyHealed ? "✓ 100% Slippage Protected" : `₹${(currentScenario.baseRevenueRiskLakhs * totalRecoveryShare).toFixed(2)} Lakhs recovered so far`}
+              </span>
+            </div>
 
-              <div>
-                <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Completion Rate Drop</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-black text-rose-400 mono">-{anomaly?.drop_pct}%</span>
-                  <span className="text-xs text-slate-400">during incident window</span>
-                </div>
+            {/* Onset Timestamp */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Breach Onset</span>
+              <div className="text-base font-black text-slate-900 mt-2 mono">
+                {currentScenario.onsetTimestamp}
               </div>
+              <span className="text-xs text-slate-500 mt-1 block">Evaluated via DuckDB micro-batches</span>
+            </div>
 
-              <div>
-                <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">KPI Baseline → Incident</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-slate-300 mono">
-                    {((anomaly?.baseline ?? 0) * 100).toFixed(1)}% → {((anomaly?.incident ?? 0) * 100).toFixed(1)}%
-                  </span>
-                </div>
-                <span className="text-xs text-slate-400 block mt-0.5">
-                  Eval Window: {anomaly?.window?.incident || "19:00-21:00"} IST
-                </span>
+            {/* Diagnosis Velocity Index */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs col-span-2 lg:col-span-1">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Clarion Triage Time</span>
+              <div className="flex items-baseline gap-1.5 mt-1.5">
+                <span className="text-2xl font-black text-emerald-600">90s</span>
+                <span className="text-xs text-slate-500">vs 4.5h standard SRE</span>
               </div>
-
-              <div className="border-l border-slate-800 pl-4">
-                <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Anomaly Onset</span>
-                <div className="text-lg font-bold text-amber-300 mono mt-1">
-                  {anomaly?.onset} IST
-                </div>
-                <span className="text-xs text-slate-400 block mt-0.5">
-                  Baseline window: {anomaly?.window?.baseline || "18:30-18:44"}
-                </span>
-              </div>
+              <span className="text-xs text-emerald-700 font-semibold mt-1 block">99.44% faster recovery cycle</span>
             </div>
           </section>
 
-          {/* Split View: Red Herring vs True Root Cause */}
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Red Herring Box */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+          {}
+          <section className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs uppercase font-bold tracking-widest text-slate-400">
-                    Symptom / Red Herring Signal
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
-                    {redHerring?.verdict || "SUPPRESSED_NOISE"}
-                  </span>
-                </div>
-
-                <div className="flex items-baseline justify-between mb-4">
-                  <h3 className="text-2xl font-black text-slate-200">
-                    {redHerring?.name || "Red Herring"}
-                  </h3>
-                  <div className="text-right">
-                    <span className="text-xs text-slate-400 block">Posterior Confidence</span>
-                    <span className="text-3xl font-black text-slate-400 mono">
-                      {((redHerring?.confidence ?? 0) * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Counterfactual Isolation Box */}
-                <div className="bg-slate-950/70 border border-slate-800 rounded-lg p-3.5 mb-4 text-xs space-y-1.5">
-                  <div className="flex justify-between items-center text-slate-300 font-semibold">
-                    <span>Counterfactual Cancellation Share:</span>
-                    <span className="mono text-indigo-300 font-bold">{((redHerring?.explained_share ?? 0) * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between items-center text-slate-300 font-semibold">
-                    <span>Recovered Impact Points:</span>
-                    <span className="mono text-indigo-300 font-bold">{(redHerring?.recovered_pts ?? 0).toFixed(2)} pts</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
-                    {redHerring?.id === "H1"
-                      ? "Suppression verified: 502 errors occurred downstream of client timeouts with 98.6% banking capture success."
-                      : "Suppression verified: signal share is statistically negligible compared to primary driver."}
-                  </p>
-                </div>
-
-                {/* Evidence Trail */}
-                <div className="space-y-2">
-                  <span className="text-xs uppercase font-semibold tracking-wider text-slate-400 block">
-                    Evidence Verification Trail
-                  </span>
-                  {(redHerring?.evidence || []).map(ev => (
-                    <div key={ev?.id || Math.random()} className="bg-slate-950/50 border border-slate-800/60 rounded p-2.5 flex items-center justify-between text-xs gap-3">
-                      <div>
-                        <span className="font-mono text-[10px] text-slate-400 mr-2">{ev?.id}</span>
-                        <span className="text-slate-300">{ev?.text}</span>
-                      </div>
-                      <span className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] whitespace-nowrap ${(ev?.lr ?? 1) < 1.0 ? 'bg-rose-950 text-rose-300 border border-rose-900' : 'bg-slate-800 text-slate-300'}`}>
-                        LR {(ev?.lr ?? 1).toFixed(3)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* True Root Cause Box */}
-            <div className="bg-indigo-950/20 border-2 border-indigo-500/80 rounded-xl p-5 flex flex-col justify-between shadow-xl shadow-indigo-950/30">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs uppercase font-bold tracking-widest text-indigo-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    Identified Root Cause
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-900/80 text-emerald-300 border border-emerald-600">
-                    {rootCause?.verdict || "ROOT_CAUSE"}
-                  </span>
-                </div>
-
-                <div className="flex items-baseline justify-between mb-4">
-                  <h3 className="text-2xl font-black text-white">
-                    {rootCause?.name || "Root Cause"}
-                  </h3>
-                  <div className="text-right">
-                    <span className="text-xs text-indigo-200 block">Posterior Confidence</span>
-                    <span className="text-4xl font-black text-emerald-400 mono">
-                      {((rootCause?.confidence ?? 0) * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Counterfactual Isolation Box */}
-                <div className="bg-slate-950/80 border border-indigo-900/60 rounded-lg p-3.5 mb-4 text-xs space-y-1.5">
-                  <div className="flex justify-between items-center text-slate-200 font-semibold">
-                    <span>Counterfactual Failure Share:</span>
-                    <span className="mono text-emerald-400 font-bold">{((rootCause?.explained_share ?? 0) * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between items-center text-slate-200 font-semibold">
-                    <span>Recovered Drop Points:</span>
-                    <span className="mono text-emerald-400 font-bold">{(rootCause?.recovered_pts ?? 0).toFixed(2)} pts</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800">
-                    Counterfactual simulation confirms that mitigating this cause recovers {(rootCause?.recovered_pts ?? 0).toFixed(1)} percentage points of completion rate drop.
-                  </p>
-                </div>
-
-                {/* Evidence Trail */}
-                <div className="space-y-2">
-                  <span className="text-xs uppercase font-semibold tracking-wider text-indigo-300 block">
-                    Evidence Verification Trail
-                  </span>
-                  {(rootCause?.evidence || []).map(ev => (
-                    <div key={ev?.id || Math.random()} className="bg-slate-950/60 border border-slate-800 rounded p-2.5 flex items-center justify-between text-xs gap-3">
-                      <div>
-                        <span className="font-mono text-[10px] text-indigo-400 mr-2">{ev?.id}</span>
-                        <span className="text-slate-200">{ev?.text}</span>
-                      </div>
-                      <span className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] whitespace-nowrap ${(ev?.lr ?? 1) >= 1.5 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-800 text-slate-300'}`}>
-                        LR {(ev?.lr ?? 1).toFixed(3)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Interactive Causal Graph (SVG with Lanes) */}
-          <section className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
-              <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span>Deterministic Causal Evidence Graph</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 mono">
-                    {activeNodes.length} nodes / {activeEdges.length} edges
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <span>5-Step Incident Cascade Storyline</span>
+                  <span className="text-[11px] font-semibold text-slate-500 px-2.5 py-0.5 bg-slate-100 rounded-full">
+                    Interactive • Click any step to inspect
                   </span>
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Multi-modal evidence topology with strict temporal ordering. Click any node to inspect raw audit details.
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Clicking any milestone filters telemetry logs, highlights verified evidence, and unlocks the What-If simulation.
                 </p>
               </div>
 
-              {/* Graph Legend */}
-              <div className="flex flex-wrap items-center gap-3 text-xs">
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>Root Cause</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>Anomaly</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-500"></span>Noise</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sky-400"></span>Refutes</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>Symptom</span>
+              {/* Legend */}
+              <div className="flex items-center gap-4 text-xs font-semibold">
+                <span className="flex items-center gap-1.5 text-rose-700">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Root Cause
+                </span>
+                <span className="flex items-center gap-1.5 text-amber-700">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Downstream Symptom
+                </span>
+                <span className="flex items-center gap-1.5 text-slate-600">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span> Filtered Distraction
+                </span>
               </div>
             </div>
 
-            {/* SVG Graph Canvas */}
-            <div className="relative overflow-x-auto pt-4">
-              <svg className="w-full min-w-[1000px] h-[460px] bg-[#070b12] rounded-lg border border-slate-950" viewBox="0 0 1100 450">
-                <defs>
-                  <marker id="arrow-causes" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" />
-                  </marker>
-                  <marker id="arrow-triggers" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#eab308" />
-                  </marker>
-                  <marker id="arrow-refutes" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8" />
-                  </marker>
-                  <marker id="arrow-amplifies" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#a855f7" />
-                  </marker>
-                </defs>
+            {/* Stepper Buttons */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {currentScenario.steps.map((st) => {
+                const isSelected = selectedStepId === st.id;
+                let borderStyle = "border-slate-200 bg-white hover:border-slate-300";
+                let badgeStyle = "bg-slate-100 text-slate-600";
+                
+                if (st.role === "root") {
+                  badgeStyle = "bg-rose-100 text-rose-800 font-bold";
+                  if (isSelected) borderStyle = "border-rose-500 bg-rose-50/60 shadow-md shadow-rose-500/10";
+                } else if (st.role === "symptom") {
+                  badgeStyle = "bg-amber-100 text-amber-800 font-bold";
+                  if (isSelected) borderStyle = "border-amber-500 bg-amber-50/60 shadow-md shadow-amber-500/10";
+                } else {
+                  badgeStyle = "bg-slate-100 text-slate-700 font-bold";
+                  if (isSelected) borderStyle = "border-slate-500 bg-slate-100 shadow-md shadow-slate-500/10";
+                }
 
-                {/* Source Lanes Background & Labels */}
-                {Object.entries({
-                  audit: { y: 20, h: 90, label: "Audit Log (Configuration & DB Deadlocks)" },
-                  telemetry: { y: 110, h: 110, label: "Telemetry Time-Series (Metrics & Queues)" },
-                  fleet: { y: 220, h: 100, label: "Fleet Logistics (Pickers & Riders)" },
-                  ledger: { y: 320, h: 110, label: "Payment Ledger (Bank Capture & Cancellations)" }
-                }).map(([k, lane]) => (
-                  <g key={k}>
-                    <rect x="0" y={lane.y} width="1100" height={lane.h} fill="#0d131f" stroke="#172033" strokeWidth="1" />
-                    <text x="16" y={lane.y + 22} fill="#64748b" fontSize="11" fontWeight="700" letterSpacing="0.05em" textTransform="uppercase">
-                      {lane.label}
-                    </text>
-                  </g>
-                ))}
-
-                {/* Edges */}
-                {activeEdges.map((edge, idx) => {
-                  const srcNode = activeNodes.find(n => n?.id === edge.src);
-                  const dstNode = activeNodes.find(n => n?.id === edge.dst);
-                  if (!srcNode || !dstNode) return null;
-
-                  const srcX = getNodeX(srcNode.id);
-                  const srcY = sourceY[srcNode.source] || 200;
-                  const dstX = getNodeX(dstNode.id);
-                  const dstY = sourceY[dstNode.source] || 200;
-
-                  const isDashed = edge.type !== "causes";
-                  const edgeColor = edge.type === "causes" ? "#ef4444" : edge.type === "refutes" ? "#38bdf8" : edge.type === "amplifies" ? "#a855f7" : "#eab308";
-
-                  return (
-                    <line
-                      key={`edge-${idx}`}
-                      x1={srcX}
-                      y1={srcY}
-                      x2={dstX}
-                      y2={dstY}
-                      stroke={edgeColor}
-                      strokeWidth="2"
-                      strokeDasharray={isDashed ? "4,4" : "none"}
-                      markerEnd={`url(#arrow-${edge.type})`}
-                      opacity="0.85"
-                    />
-                  );
-                })}
-
-                {/* Nodes */}
-                {activeNodes.map((node) => {
-                  if (!node) return null;
-                  const x = getNodeX(node.id);
-                  const y = sourceY[node.source] || 200;
-                  const color = roleColors[node.role] || "#94a3b8";
-                  const isSelected = selectedNode?.id === node.id;
-
-                  return (
-                    <g
-                      key={node.id}
-                      onClick={() => setSelectedNode(node)}
-                      className="cursor-pointer group"
-                    >
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={isSelected ? 14 : 10}
-                        fill={color}
-                        stroke={isSelected ? "#ffffff" : "#0f172a"}
-                        strokeWidth={isSelected ? 4 : 3}
-                        style={{ transformOrigin: "center", transformBox: "fill-box" }}
-                        className="transition-all duration-150 group-hover:stroke-white group-hover:stroke-[4px]"
-                      />
-                      <rect
-                        x={x - 85}
-                        y={y + 14}
-                        width="170"
-                        height="26"
-                        rx="4"
-                        fill="#0b111e"
-                        stroke={isSelected ? color : "#1e293b"}
-                        strokeWidth="1"
-                        opacity="0.95"
-                      />
-                      <text
-                        x={x}
-                        y={y + 31}
-                        fill="#e2e8f0"
-                        fontSize="10"
-                        fontWeight="600"
-                        textAnchor="middle"
-                        className="select-none pointer-events-none"
-                      >
-                        {truncateText(node.label || "", 26)}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
-
-              {/* Selected Node Inspector Flyout */}
-              {selectedNode && (
-                <div className="mt-3 p-4 bg-slate-950 border border-slate-700 rounded-lg text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-white text-sm">{selectedNode?.label}</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold mono bg-slate-800 text-slate-300">
-                        Role: {selectedNode?.role}
-                      </span>
-                      <span className="text-slate-400 mono">Source: {selectedNode?.source}</span>
-                    </div>
-                    <p className="text-slate-300">{selectedNode?.detail}</p>
-                    <span className="text-[11px] text-slate-400 mono block mt-0.5">
-                      Entity: {selectedNode?.entity} | Recorded: {selectedNode?.ts}
-                    </span>
-                  </div>
+                return (
                   <button
-                    onClick={() => setSelectedNode(null)}
-                    className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-semibold"
+                    key={st.id}
+                    onClick={() => setSelectedStepId(st.id)}
+                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer relative ${borderStyle} ${
+                      isSelected ? 'ring-2 ring-offset-2 ring-slate-900/10' : ''
+                    }`}
                   >
-                    Close Inspector
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Step 0{st.index}
+                        </span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md ${badgeStyle}`}>
+                          {st.role === "root" ? "ROOT" : st.role === "symptom" ? "SYMPTOM" : "NOISE"}
+                        </span>
+                      </div>
+                      <div className="font-bold text-sm text-slate-900 mb-1">{st.name}</div>
+                      <div className="text-[11px] text-slate-500 mono">{st.time}</div>
+                    </div>
+                    <p className="text-[11px] text-slate-600 mt-2 line-clamp-2 leading-relaxed">
+                      {st.summary}
+                    </p>
+                    {isSelected && (
+                      <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] font-bold text-slate-900">
+                        <span>Selected Focus</span>
+                        <span>&rarr;</span>
+                      </div>
+                    )}
                   </button>
+                );
+              })}
+            </div>
+
+            {/* Active Step Detailed Callout & What-If Interactivity */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+              <div className="space-y-1.5 max-w-3xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-rose-700">
+                    Inspecting Milestone 0{selectedStep.index}: {selectedStep.name}
+                  </span>
+                  <span className="text-xs text-slate-400 mono">({selectedStep.time})</span>
                 </div>
-              )}
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                  {selectedStep.detailedStory}
+                </p>
+                <div className="text-xs text-slate-500 font-mono flex items-center gap-2 pt-1">
+                  <span className="font-bold text-slate-700">Ground Truth Audit:</span>
+                  <span>{selectedStep.evidenceQuote}</span>
+                </div>
+              </div>
+
+              {/* Counterfactual What-If Intervention Widget */}
+              <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs shrink-0 lg:w-80 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-800">What-If Intervention:</span>
+                  <span className="font-bold text-emerald-600">
+                    +{whatIfOrdersSaved} orders
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  Simulating intervention at <strong>Step 0{selectedStep.index}</strong> ({selectedStep.time}):
+                </p>
+                <div className="flex items-center justify-between text-xs font-semibold pt-1 border-t border-slate-100">
+                  <span className="text-slate-600">Recoverable Revenue:</span>
+                  <span className="text-emerald-700 font-black">₹{whatIfRevenueSaved} Lakhs</span>
+                </div>
+              </div>
             </div>
           </section>
 
-          {/* Lower Grid: Agent Trace Terminal, Ranked Causes, Remediation, Velocity Index */}
-          <div ref={lowerSectionRef} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Agent Trace Terminal (Left 7 Cols) */}
-            <div className="lg:col-span-7 bg-[#060a12] border border-slate-800 rounded-xl p-5 flex flex-col h-[520px]">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-rose-500"></span>
-                  <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-                  <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-                  <span className="text-xs font-bold text-slate-300 mono ml-2">
-                    Agentic Reasoning Execution Trace ({streamedSteps.length}/{Array.isArray(result?.trace) ? result.trace.length : 0} checks)
+          {}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* LEFT 7 COLS: The Findings, Noise Suppression, and Dynamic Log Ingestion */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Root Cause Card */}
+              <div className={`bg-white border-2 rounded-3xl p-6 shadow-xs transition-all relative overflow-hidden ${
+                selectedStep.role === "root" ? "border-rose-400 ring-2 ring-rose-100" : "border-slate-200"
+              }`}>
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-rose-600"></span>
+                      <span className="text-xs uppercase font-extrabold tracking-wider text-rose-700">
+                        Definitive Root Cause
+                      </span>
+                      <span className="text-xs bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded-md">
+                        {currentScenario.category}
+                      </span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
+                      {currentScenario.primaryRootTitle}
+                    </h2>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Bayesian Confidence</span>
+                    <span className="text-2xl font-black text-rose-700">{currentScenario.primaryConfidence}%</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block">
+                    Verified Causal Evidence Chain:
+                  </span>
+                  {currentScenario.steps.filter(s => s.role === "root").map((step, idx) => {
+                    const isStepActive = selectedStepId === step.id;
+                    return (
+                      <div
+                        key={step.id}
+                        onClick={() => setSelectedStepId(step.id)}
+                        className={`p-3 rounded-xl border text-xs cursor-pointer transition-all flex items-start justify-between gap-3 ${
+                          isStepActive 
+                            ? 'bg-rose-50 border-rose-300 text-rose-950 font-medium' 
+                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-rose-700">Milestone 0{step.index} ({step.time}):</span>
+                            <span className="font-semibold text-slate-900">{step.name}</span>
+                          </div>
+                          <p className="text-slate-600">{step.evidenceQuote}</p>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 shrink-0">
+                          Inspect &rarr;
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs font-medium flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Counterfactual simulation confirms mitigating this cause restores <strong>+{currentScenario.recoveredImpactPoints} pts</strong> of order drops.</span>
+                  </div>
+                  <span className="text-emerald-800 font-extrabold shrink-0">Verified</span>
+                </div>
+              </div>
+
+              {/* Suppressed False Alarm / Noise Card */}
+              <div 
+                onClick={() => setShowNoiseModal(true)}
+                className={`bg-white border-2 rounded-3xl p-5 sm:p-6 shadow-xs cursor-pointer transition-all hover:border-slate-300 ${
+                  selectedStep.role === "noise" ? "border-slate-500 ring-2 ring-slate-100" : "border-slate-200"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span className="text-xs uppercase font-extrabold tracking-wider text-slate-500">
+                      Suppressed Noise / False Alarm (Click to Compare Timeline)
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                    {currentScenario.noiseConfidence}% (Refuted)
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-400 mono">
-                  Playbook execution live
-                </span>
+
+                <div className="flex items-baseline justify-between">
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {currentScenario.noiseTitle}
+                  </h3>
+                  <span className="text-xs font-semibold text-rose-600 underline">
+                    View Temporal Delta &rarr;
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                  {currentScenario.noiseExplanation}
+                </p>
+
+                <div className="mt-3 text-[11px] text-slate-500 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>Clarion eliminated this red herring in 90 seconds, shielding engineers from false investigations.</span>
+                </div>
               </div>
 
-              <div ref={terminalContainerRef} className="flex-1 overflow-y-auto space-y-2 mono text-xs pr-1">
-                {streamedSteps.filter(Boolean).map((step, idx) => {
-                  const stepNum = step?.step ?? (idx + 1);
-                  const stepHyp = step?.hypothesis ?? "H3";
-                  const hypColor = stepHyp === "H3" ? "text-emerald-400" : stepHyp === "H2" ? "text-cyan-400" : "text-amber-400";
-                  return (
-                    <div key={stepNum} className="p-2 rounded bg-slate-950/70 border border-slate-900 leading-relaxed">
-                      <div className="flex items-center justify-between text-[11px] mb-1">
-                        <span className="text-slate-400">
-                          Step [{stepNum.toString().padStart(2, "0")}] → <span className={`font-bold ${hypColor}`}>{stepHyp}</span>
-                        </span>
-                        <span className="text-indigo-400 font-semibold">{step?.tool || "tool"}()</span>
+              {/* Telemetry Log Stream Filtered to Selected Step */}
+              <div className="bg-slate-900 rounded-3xl p-5 sm:p-6 text-slate-200 space-y-4 shadow-lg shadow-slate-900/10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                    <h4 className="text-xs font-bold tracking-wider uppercase text-slate-300 font-mono">
+                      Telemetry Evidence Stream: Milestone 0{selectedStep.index}
+                    </h4>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search logs..."
+                    value={logSearchQuery}
+                    onChange={(e) => setLogSearchQuery(e.target.value)}
+                    className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div className="space-y-2 max-h-56 overflow-y-auto font-mono text-xs pr-2">
+                  {visibleLogs.length > 0 ? (
+                    visibleLogs.map((log) => (
+                      <div key={log.id} className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 flex items-start justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2 text-[11px]">
+                            <span className="text-slate-400">{log.ts}</span>
+                            <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                              log.level === 'CRIT' ? 'bg-rose-950 text-rose-300' : 'bg-amber-950 text-amber-300'
+                            }`}>{log.level}</span>
+                            <span className="text-emerald-400 font-semibold">{log.service}</span>
+                          </div>
+                          <p className="text-slate-300 text-[11px]">{log.message}</p>
+                        </div>
+                        <span className="text-[10px] text-slate-500 shrink-0">{log.source}</span>
                       </div>
-                      <div className="text-slate-400 text-[11px]">
-                        query: <span className="text-slate-300">{JSON.stringify(step?.query || {})}</span>
-                      </div>
-                      <div className="text-slate-200 mt-1 pl-2 border-l-2 border-slate-700">
-                        {step?.result || ""}
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6 text-slate-500 text-xs">
+                      No logs found matching filter. Select another milestone or clear search query.
                     </div>
-                  );
-                })}
+                  )}
+                </div>
               </div>
+
             </div>
 
-            {/* Right Column: Ranked Causes, Remediation, Velocity Index (5 Cols) */}
+            {/* RIGHT 5 COLS: Interactive Remediation Stepper & Execution Simulator */}
             <div className="lg:col-span-5 space-y-6">
-              {/* Ranked Causes */}
-              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
-                <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
-                  Ranked Probable Root Causes
-                </h4>
+              
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Interactive Resolution Plan
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Toggle actions individually or click <strong>Execute All</strong> to watch real-time recovery.
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-1 rounded bg-amber-100 text-amber-900 uppercase">
+                    Approval Ready
+                  </span>
+                </div>
+
+                {/* Progress Bar of Resolution */}
+                <div>
+                  <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                    <span className="text-slate-600">Recovery Progress</span>
+                    <span className={isFullyHealed ? "text-emerald-600" : "text-rose-600"}>
+                      {Math.round(totalRecoveryShare * 100)}% Healed
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                    <div 
+                      className="bg-emerald-500 h-full transition-all duration-500 rounded-full"
+                      style={{ width: `${Math.round(totalRecoveryShare * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Interactive Remediation Checkbox Items */}
                 <div className="space-y-3">
-                  {ranked.map((item, idx) => {
-                    if (!item) return null;
+                  {currentScenario.remediations.map((rem, idx) => {
+                    const isApplied = !!appliedRemediations[rem.id];
                     return (
-                      <div key={item.id || idx} className="p-3 bg-slate-950/80 border border-slate-800/80 rounded-lg">
-                        <div className="flex items-center justify-between mb-1">
+                      <div
+                        key={rem.id}
+                        onClick={() => handleToggleRemediation(rem.id)}
+                        className={`p-3.5 rounded-2xl border text-xs cursor-pointer transition-all space-y-1.5 ${
+                          isApplied 
+                            ? 'bg-emerald-50/70 border-emerald-300 text-emerald-950' 
+                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-white text-xs">#{idx + 1} {item.name}</span>
-                            <span className="text-[10px] mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
-                              {item.id}
+                            <input
+                              type="checkbox"
+                              checked={isApplied}
+                              onChange={() => {}} // handled by parent div
+                              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                            />
+                            <span className="font-bold text-slate-900 text-xs">
+                              {idx + 1}. {rem.title}
                             </span>
                           </div>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                            item.verdict === 'ROOT_CAUSE' ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' :
-                            item.verdict === 'SUPPRESSED_NOISE' ? 'bg-slate-800 text-slate-400 border border-slate-700' :
-                            'bg-indigo-950 text-indigo-300 border border-indigo-700'
+                          <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded ${
+                            isApplied ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-700'
                           }`}>
-                            {item.verdict}
+                            +{Math.round(rem.recoveryShare * 100)}% Effect
                           </span>
                         </div>
-                        {/* Progress Bar */}
-                        <div className="w-full bg-slate-800 rounded-full h-2 my-2 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              item.verdict === 'ROOT_CAUSE' ? 'bg-emerald-500' :
-                              item.verdict === 'SUPPRESSED_NOISE' ? 'bg-slate-600' : 'bg-indigo-500'
-                            }`}
-                            style={{ width: `${Math.round((item.confidence ?? 0) * 100)}%` }}
-                          ></div>
-                        </div>
-                        <div className="flex justify-between items-center text-[11px] text-slate-400 mono">
-                          <span>Prior: {((item.prior ?? 0) * 100).toFixed(0)}%</span>
-                          <span className="font-bold text-white">Posterior: {((item.confidence ?? 0) * 100).toFixed(1)}%</span>
+                        <p className="text-[11px] text-slate-500 pl-6 leading-relaxed">
+                          {rem.explanation}
+                        </p>
+                        <div className="pl-6 font-mono text-[10px] text-slate-400">
+                          {rem.command}
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              </div>
 
-              {/* Remediation List */}
-              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
-                <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-2 flex items-center justify-between">
-                  <span>Advisory Remediation Plan</span>
-                  <span className="text-[10px] text-amber-400 font-semibold px-2 py-0.5 bg-amber-950/60 border border-amber-800 rounded">
-                    Human Approval Required
-                  </span>
-                </h4>
-                <div className="space-y-2 mt-3">
-                  {remediation.map((rem, idx) => {
-                    if (!rem) return null;
-                    return (
-                      <div key={rem.priority || idx} className="p-2.5 bg-slate-950/60 border border-slate-800 rounded text-xs space-y-1">
-                        <div className="font-semibold text-slate-200">
-                          {rem.priority}. {rem.action}
-                        </div>
-                        <div className="mono text-[11px] text-indigo-300">
-                          Target: {rem.target}
-                        </div>
-                        <div className="text-[10px] text-slate-400 italic">
-                          {rem.advisory}
-                        </div>
+                {/* Action Buttons */}
+                <div className="pt-2 space-y-2">
+                  <button
+                    onClick={handleExecuteAll}
+                    disabled={isAutoExecuting || isFullyHealed}
+                    className={`w-full py-3.5 px-4 rounded-2xl font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 ${
+                      isFullyHealed
+                        ? 'bg-emerald-600 text-white cursor-default'
+                        : isAutoExecuting
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-rose-700 hover:bg-rose-800 active:scale-[0.99] text-white shadow-rose-900/20 cursor-pointer'
+                    }`}
+                  >
+                    {isFullyHealed ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                        All Fixes Executed (Fully Nominal)
+                      </>
+                    ) : isAutoExecuting ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        Applying Remediation Steps ({executionProgress}%)...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Approve &amp; Execute All Fixes
+                      </>
+                    )}
+                  </button>
+
+                  {totalRecoveryShare > 0 && !isAutoExecuting && (
+                    <button
+                      onClick={handleResetRemediation}
+                      className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 underline transition cursor-pointer"
+                    >
+                      Reset and Re-simulate Incident Alert State
+                    </button>
+                  )}
+                </div>
+
+                {/* Live Resolution Execution Console Drawer */}
+                {liveExecutionLogs.length > 0 && (
+                  <div className="mt-3 p-3.5 bg-slate-900 rounded-2xl text-slate-200 font-mono text-[11px] space-y-1.5 shadow-inner">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">
+                      Autonomous Remediation Live Execution Trace:
+                    </span>
+                    {liveExecutionLogs.map((entry, i) => (
+                      <div key={i} className="leading-tight text-slate-300">
+                        {entry}
                       </div>
-                    );
-                  })}
-                </div>
+                    ))}
+                  </div>
+                )}
+
               </div>
 
-              {/* Investigation Velocity Index Card */}
-              <div className="bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-900/50 rounded-xl p-5">
-                <span className="text-xs font-bold text-indigo-300 uppercase tracking-wider block mb-2">
-                  Investigation Velocity Index
-                </span>
-                <div className="grid grid-cols-2 gap-4 my-2">
-                  <div>
-                    <span className="text-[11px] text-slate-400 block">Manual MTTR</span>
-                    <span className="text-2xl font-black text-slate-300 mono">4.5 h</span>
-                    <span className="text-[10px] text-slate-400 block">({roi?.manual_s || 16200}s benchmark)</span>
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-slate-400 block">Clarion E2E</span>
-                    <span className="text-2xl font-black text-emerald-400 mono">90 s</span>
-                    <span className="text-[10px] text-slate-400 block">({roi?.reduction_pct || 99.44}% MTTR reduction)</span>
-                  </div>
-                </div>
-                <div className="text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
-                  both MTTR figures are assumptions from config.json; measured compute time: <span className="text-white font-bold mono">{roi?.compute_ms || 0} ms</span>
-                </div>
-              </div>
-
-              {/* Robustness Mini-Panel */}
-              {robustness && (
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 text-xs">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                      Monte Carlo Ranking Stability
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-                      {((robustness.share_top_cause_holds ?? 0) * 100).toFixed(1)}% Stable
-                    </span>
-                  </div>
-                  <p className="text-slate-400 text-[11px]">
-                    Top root cause held in <strong className="text-white mono">{((robustness.share_top_cause_holds ?? 0) * 100).toFixed(1)}%</strong> of {(robustness.n_runs || 5000).toLocaleString()} runs under uniform ±30% prior &amp; likelihood ratio perturbations (acceptance threshold: ≥ 95%).
-                  </p>
-                </div>
-              )}
             </div>
+
           </div>
 
-          {/* Dossier Modal */}
-          {showDossierModal && (
-            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
-                {/* Modal Header */}
-                <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-white text-base">
-                      Clarion Auditable Incident Dossier
-                    </h3>
-                    <span className="text-xs text-slate-400 mono">
-                      Dossier ID: {dossierId} | SHA-256 Verified
-                    </span>
+          {}
+          
+          {/* Modal 1: Custom Telemetry File Upload (DuckDB Engine) */}
+          {showUploadModal && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <h3 className="font-bold text-slate-900 text-base">Ingest Custom Incident Telemetry</h3>
+                  <button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold cursor-pointer">&times;</button>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Upload raw CSV or JSON files matching schema: <code className="bg-slate-100 px-1 py-0.5 rounded text-rose-700">timestamp, metric_name, value, event_type</code>. Clarion parses files locally with an in-memory DuckDB engine to compute Bayesian likelihoods offline with zero hallucinations.
+                </p>
+                <div className="border-2 border-dashed border-slate-300 hover:border-rose-500 rounded-2xl p-6 text-center transition cursor-pointer">
+                  <input
+                    type="file"
+                    accept=".csv,.json"
+                    onChange={handleSimulateUpload}
+                    id="duckdb-file-upload"
+                    className="hidden"
+                  />
+                  <label htmlFor="duckdb-file-upload" className="cursor-pointer block space-y-2">
+                    <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-700 mx-auto flex items-center justify-center">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-bold text-rose-700 block">Click to select CSV or JSON file</span>
+                    <span className="text-[11px] text-slate-400 block">DuckDB in-process pushdown query executor</span>
+                  </label>
+                </div>
+                {uploadNotification && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs rounded-xl font-mono leading-relaxed">
+                    {uploadNotification}
                   </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Modal 2: Timeline Delta Deep-Dive for Suppressed False Alarms */}
+          {showNoiseModal && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={handlePrint}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700"
-                    >
-                      Print / Save PDF
-                    </button>
-                    <button
-                      onClick={handleDownloadMd}
-                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow"
-                    >
-                      Download .md
-                    </button>
-                    <button
-                      onClick={() => setShowDossierModal(false)}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-semibold rounded-lg"
-                    >
-                      ✕
-                    </button>
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <h3 className="font-bold text-slate-900 text-base">Why Clarion Suppressed This Alarm</h3>
                   </div>
+                  <button onClick={() => setShowNoiseModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold cursor-pointer">&times;</button>
                 </div>
 
-                {/* Printable / Renderable Content */}
-                <div id="print-dossier-area" className="p-6 overflow-y-auto font-mono text-xs text-slate-200 whitespace-pre-wrap leading-relaxed select-text">
-                  {dossierMarkdown}
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <strong className="block text-slate-900 mb-1">Temporal Sequence Contradiction:</strong>
+                    <span>The alleged failure signal (<strong>{currentScenario.noiseTitle}</strong>) breached alert thresholds at <strong>{currentScenario.noiseOnset}</strong>, exactly 60 seconds AFTER completion rates had already collapsed at <strong>{currentScenario.onsetTimestamp}</strong>. A consequence cannot cause its own predecessor.</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950">
+                    <strong className="block text-emerald-900 mb-1">Causal Independence Proof:</strong>
+                    <span>{currentScenario.noiseExplanation}</span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500">
+                    Traditional rule-based monitoring alerts on volume alone, misdirecting SREs toward payment providers. Clarion calculates likelihood ratios across causal paths to eliminate distraction.
+                  </p>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Modal 3: Printable Executive Incident Dossier */}
+          {showReportModal && (
+            <div id="print-report-modal" className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto space-y-4">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Clarion Executive Incident Dossier</h3>
+                    <span className="text-xs text-slate-500 font-mono">Incident Stamp #{currentScenario.id.toUpperCase()} • Generated Live</span>
+                  </div>
+                  <div className="flex items-center gap-2 no-print">
+                    <button
+                      onClick={() => window.print()}
+                      className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl cursor-pointer"
+                    >
+                      Print PDF
+                    </button>
+                    <button
+                      onClick={() => setShowReportModal(false)}
+                      className="text-slate-400 hover:text-slate-600 px-2 py-1 text-base font-bold cursor-pointer"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                  <div className="grid grid-cols-2 gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 font-medium">
+                    <div><strong>Hub Location:</strong> {currentScenario.hubName}</div>
+                    <div><strong>Incident Onset:</strong> {currentScenario.onsetTimestamp}</div>
+                    <div><strong>Orders Affected:</strong> {currentScenario.baseOrdersLost.toLocaleString()} orders</div>
+                    <div><strong>Revenue At Risk:</strong> ₹{currentScenario.baseRevenueRiskLakhs} Lakhs</div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1 text-sm">Autonomous Diagnostic Verdict:</h4>
+                    <p className="p-3 bg-rose-50 border border-rose-200 text-rose-950 font-semibold rounded-xl">
+                      {currentScenario.primaryRootTitle} (Confidence: {currentScenario.primaryConfidence}%)
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1 text-sm">Chronological Cascade:</h4>
+                    <ol className="list-decimal pl-5 space-y-1 text-slate-600 font-medium">
+                      {currentScenario.steps.map(s => (
+                        <li key={s.id}>
+                          <strong>{s.name} ({s.time}):</strong> {s.summary}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1 text-sm">Refuted Red Herring:</h4>
+                    <p className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600">
+                      <strong>{currentScenario.noiseTitle}:</strong> {currentScenario.noiseExplanation}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1 text-sm">Recommended Autonomous Remediation:</h4>
+                    <ol className="list-decimal pl-5 space-y-1 text-slate-800 font-medium">
+                      {currentScenario.remediations.map(r => (
+                        <li key={r.id}>
+                          {r.title} — <em>{r.command}</em>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       );
     }
 
-    function getNodeX(nodeId) {
-      const xMap = {
-        node_config_search: 120,
-        node_config_batching: 160,
-        node_deadlock_audit: 290,
-        node_no_deadlocks: 290,
-        node_db_locks: 300,
-        node_alloc_latency: 420,
-        node_picker_idle: 430,
-        node_dispatch_queue: 560,
-        node_anomaly_completion: 680,
-        node_dispatch_timeouts: 700,
-        node_payment_502: 840,
-        node_upi_capture: 860,
-        node_poll_timing: 980,
-        node_weather_rejection: 990,
-      };
-      return xMap[nodeId] || 500;
-    }
-
-    function truncateText(str, max) {
-      if (!str) return "";
-      return str.length > max ? str.slice(0, max - 2) + ".." : str;
-    }
-
     const rootElement = document.getElementById("root");
-    const reactRoot = ReactDOM.createRoot(rootElement);
-    reactRoot.render(<ClarionApp />);
+    const appRoot = ReactDOM.createRoot(rootElement);
+    appRoot.render(<ClarionApp />);
   </script>
 </body>
 </html>
-
-
-<!-- Clarion Package 3 Integration Bar -->
-<div style="background: rgba(15, 23, 42, 0.85); border: 1px solid #334155; padding: 14px 20px; border-radius: 8px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-  <div style="display: flex; gap: 10px; align-items: center;">
-    <span style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">DuckDB Ingest:</span>
-    <input type="file" id="telemetryFile" accept=".csv,.json" style="font-size: 12px; color: #cbd5e0; max-width: 180px;">
-    <button onclick="handleFileUpload()" style="background: #2563eb; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px;">Run Ingest</button>
-    <span id="uploadStatus" style="font-size: 12px;"></span>
-  </div>
-
-  <div style="display: flex; gap: 10px; align-items: center;">
-    <span style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">Human Approval:</span>
-    <button onclick="recordDecision('CONFIRMED')" style="background: #16a34a; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px;">Confirm Verdict</button>
-    <button onclick="recordDecision('REJECTED')" style="background: #dc2626; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px;">Reject Verdict</button>
-    <span id="feedbackNotice" style="font-size: 12px;"></span>
-  </div>
-</div>
-
-<script>
-async function loadScenario(scenarioId) {
-  if (scenarioId === "festival_deadlock") {
-    window.location.reload();
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/scenario/${scenarioId}`);
-    if (!res.ok) throw new Error("Could not load scenario");
-    const data = await res.json();
-
-    const rootCauseTitle = document.querySelector(".ROOT_CAUSE, [class*='root-cause']") || document.querySelectorAll("h3")[1];
-    if (rootCauseTitle) rootCauseTitle.innerText = data.title || "Redis Cache Eviction Surge";
-
-    const traceContainer = document.querySelector(".trace-list, [class*='reasoning']") || document.getElementById("traceContainer");
-    if (traceContainer && data.telemetry) {
-      traceContainer.innerHTML = data.telemetry.map((t, idx) => `
-        <div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 12px;">
-          <span style="color: #38bdf8;">Step [0${idx+1}]</span> - 
-          <b>${t.metric_name}</b>: <span style="color: #f87171;">${t.value}</span> (${t.event_type}) 
-          <span style="color: #64748b; font-size: 10px;">@ ${t.timestamp}</span>
-        </div>
-      `).join("");
-    }
-
-    const auditContainer = document.getElementById("auditTrail") || document.querySelector(".audit-logs");
-    if (auditContainer && data.audit_logs) {
-      auditContainer.innerHTML = data.audit_logs.map(log => `
-        <div style="font-size: 11px; margin: 4px 0; color: ${log.level === 'CRITICAL' ? '#ef4444' : '#f59e0b'};">
-          [${log.level}] <b>${log.service}</b>: ${log.message}
-        </div>
-      `).join("");
-    }
-  } catch (err) {
-    console.error("Scenario load error:", err);
-  }
-}
-
-async function handleFileUpload() {
-  const fileInput = document.getElementById('telemetryFile');
-  const status = document.getElementById('uploadStatus');
-  if (!fileInput.files.length) {
-    status.style.color = "#f87171";
-    status.innerText = "Select a file first";
-    return;
-  }
-  const form = new FormData();
-  form.append('file', fileInput.files[0]);
-  status.style.color = "#38bdf8";
-  status.innerText = "Ingesting into DuckDB...";
-
-  try {
-    const res = await fetch('/api/upload', { method: 'POST', body: form });
-    const result = await res.json();
-    if (res.ok) {
-      status.style.color = "#4ade80";
-      status.innerText = `Ingested ${result.rows_ingested} records into memory!`;
-    } else {
-      status.style.color = "#f87171";
-      status.innerText = result.detail || "Upload error";
-    }
-  } catch (e) {
-    status.style.color = "#f87171";
-    status.innerText = e.message;
-  }
-}
-
-async function recordDecision(decision) {
-  const notice = document.getElementById('feedbackNotice');
-  notice.style.color = "#38bdf8";
-  notice.innerText = "Writing to fallback store...";
-
-  const scenarioDropdown = document.getElementById('scenarioSelect');
-  const activeScenario = scenarioDropdown ? scenarioDropdown.value : "scenario_3";
-  try {
-    const res = await fetch('/api/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        item_id: activeScenario,
-        decision: decision,
-        notes: "Decision recorded via local dashboard interface"
-      })
-    });
-    const result = await res.json();
-    if (res.ok) {
-      notice.style.color = "#4ade80";
-      notice.innerText = `Recorded (${decision}) in feedback.json`;
-    } else {
-      notice.style.color = "#f87171";
-      notice.innerText = result.detail || "Error saving";
-    }
-  } catch (e) {
-    notice.style.color = "#f87171";
-    notice.innerText = e.message;
-  }
-}
-</script>
