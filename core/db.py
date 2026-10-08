@@ -174,7 +174,12 @@ def save_feedback(
 
 
 def get_adjusted_priors(db_path: str = DB_PATH) -> dict[str, float]:
-    """Read feedback grouped by hypothesis_id, counting confirm as +1.0 and reject as -1.0 with base 1.0."""
+    """Aggregate rows from the feedback table into delta log-odds adjustments.
+
+    Each 'confirm' adds +0.5 delta log-odds; each 'reject' subtracts -0.5 delta log-odds.
+    Returns a dictionary mapping {hypothesis_id: adjustment_delta} (defaulting to empty dict
+    or neutral 0.0 delta if no feedback exists).
+    """
     init_db(db_path)
     conn = get_connection(db_path)
     try:
@@ -182,20 +187,19 @@ def get_adjusted_priors(db_path: str = DB_PATH) -> dict[str, float]:
         cursor.execute(
             """
             SELECT hypothesis_id,
-                   SUM(CASE WHEN feedback_type = 'confirm' THEN 1.0
-                            WHEN feedback_type = 'reject' THEN -1.0
-                            ELSE 0.0 END) AS net_score
+                   SUM(CASE WHEN feedback_type = 'confirm' THEN 0.5
+                            WHEN feedback_type = 'reject' THEN -0.5
+                            ELSE 0.0 END) AS delta
             FROM feedback
             GROUP BY hypothesis_id
             """
         )
         rows = cursor.fetchall()
-        priors: dict[str, float] = {}
+        adjustments: dict[str, float] = {}
         for row in rows:
             hyp_id = row["hypothesis_id"]
-            net_score = float(row["net_score"]) if row["net_score"] is not None else 0.0
-            # Base of 1.0 adjusted by operator confirmation/rejection feedback
-            priors[hyp_id] = max(0.01, 1.0 + net_score)
-        return priors
+            delta = float(row["delta"]) if row["delta"] is not None else 0.0
+            adjustments[hyp_id] = round(delta, 4)
+        return adjustments
     finally:
         conn.close()
