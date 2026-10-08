@@ -1,227 +1,282 @@
 ticket_id,ts,channel,text
-TCK-1001,2026-10-07 18:00:42,APP_CHAT,Need to change delivery location address
-TCK-1002,2026-10-07 18:03:04,IN_APP_HELP,How do I apply the Diwali discount voucher?
-TCK-1003,2026-10-07 18:04:07,WHATSAPP,Delivery partner details missing on tracking page
-TCK-1004,2026-10-07 18:06:55,WHATSAPP,App interface is slightly sluggish today
-TCK-1005,2026-10-07 18:10:59,APP_CHAT,Delivery partner details missing on tracking page
-TCK-1006,2026-10-07 18:11:15,APP_CHAT,Need to change delivery location address
-TCK-1007,2026-10-07 18:12:01,APP_CHAT,App interface is slightly sluggish today
-TCK-1008,2026-10-07 18:14:09,WHATSAPP,Need to change delivery location address
-TCK-1009,2026-10-07 18:15:45,WHATSAPP,App interface is slightly sluggish today
-TCK-1010,2026-10-07 18:16:53,APP_CHAT,Delivery partner details missing on tracking page
-TCK-1011,2026-10-07 18:18:31,WHATSAPP,Add extra carry bag to my current order
-TCK-1012,2026-10-07 18:25:17,IN_APP_HELP,Add extra carry bag to my current order
-TCK-1013,2026-10-07 18:27:18,APP_CHAT,Add extra carry bag to my current order
-TCK-1014,2026-10-07 18:33:52,IN_APP_HELP,How do I apply the Diwali discount voucher?
-TCK-1015,2026-10-07 18:35:15,WHATSAPP,App interface is slightly sluggish today
-TCK-1016,2026-10-07 18:36:17,IN_APP_HELP,Delivery partner details missing on tracking page
-TCK-1017,2026-10-07 18:37:48,APP_CHAT,Delivery partner details missing on tracking page
-TCK-1018,2026-10-07 18:38:54,IN_APP_HELP,Add extra carry bag to my current order
-TCK-1019,2026-10-07 18:39:44,APP_CHAT,App interface is slightly sluggish today
-TCK-1020,2026-10-07 18:44:56,APP_CHAT,Need to change delivery location address
-TCK-1021,2026-10-07 18:46:56,APP_CHAT,Need to change delivery location address
-TCK-1022,2026-10-07 18:47:04,APP_CHAT,Payment debited but order failed immediately
-TCK-1023,2026-10-07 18:49:03,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1024,2026-10-07 18:50:03,IN_APP_HELP,Need to change delivery location address
-TCK-1025,2026-10-07 18:50:36,APP_CHAT,Payment debited but order failed immediately
-TCK-1026,2026-10-07 18:51:27,APP_CHAT,Payment debited but order failed immediately
-TCK-1027,2026-10-07 18:52:05,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1028,2026-10-07 18:53:34,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1030,2026-10-07 18:55:04,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1029,2026-10-07 18:55:53,WHATSAPP,Need to change delivery location address
-TCK-1031,2026-10-07 18:56:42,APP_CHAT,Need to change delivery location address
-TCK-1032,2026-10-07 18:56:59,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1033,2026-10-07 18:57:13,APP_CHAT,Payment debited but order failed immediately
-TCK-1034,2026-10-07 18:58:31,APP_CHAT,How do I apply the Diwali discount voucher?
-TCK-1035,2026-10-07 18:58:40,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1036,2026-10-07 18:59:09,APP_CHAT,How do I apply the Diwali discount voucher?
-TCK-1037,2026-10-07 18:59:59,APP_CHAT,502 error during checkout payment confirmation
-TCK-1038,2026-10-07 19:00:33,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1039,2026-10-07 19:01:34,APP_CHAT,502 error during checkout payment confirmation
-TCK-1040,2026-10-07 19:02:18,APP_CHAT,502 error during checkout payment confirmation
-TCK-1041,2026-10-07 19:03:09,APP_CHAT,Payment debited but order failed immediately
-TCK-1042,2026-10-07 19:04:03,WHATSAPP,Add extra carry bag to my current order
-TCK-1043,2026-10-07 19:04:25,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1044,2026-10-07 19:05:18,APP_CHAT,Payment debited but order failed immediately
-TCK-1046,2026-10-07 19:06:25,APP_CHAT,Payment debited but order failed immediately
-TCK-1045,2026-10-07 19:06:53,WHATSAPP,Add extra carry bag to my current order
-TCK-1047,2026-10-07 19:07:59,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1048,2026-10-07 19:08:13,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1049,2026-10-07 19:09:36,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1050,2026-10-07 19:10:05,WHATSAPP,Delivery partner details missing on tracking page
-TCK-1051,2026-10-07 19:11:13,IN_APP_HELP,Delivery partner details missing on tracking page
-TCK-1052,2026-10-07 19:11:39,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1053,2026-10-07 19:12:54,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1054,2026-10-07 19:13:46,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1055,2026-10-07 19:14:29,WHATSAPP,Add extra carry bag to my current order
-TCK-1057,2026-10-07 19:15:05,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1056,2026-10-07 19:15:34,WHATSAPP,Delivery partner details missing on tracking page
-TCK-1059,2026-10-07 19:16:19,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1058,2026-10-07 19:16:34,IN_APP_HELP,App interface is slightly sluggish today
-TCK-1060,2026-10-07 19:17:59,APP_CHAT,Payment debited but order failed immediately
-TCK-1061,2026-10-07 19:18:00,APP_CHAT,Payment debited but order failed immediately
-TCK-1062,2026-10-07 19:19:48,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1063,2026-10-07 19:20:13,WHATSAPP,App interface is slightly sluggish today
-TCK-1064,2026-10-07 19:20:38,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1065,2026-10-07 19:21:33,IN_APP_HELP,Need to change delivery location address
-TCK-1066,2026-10-07 19:21:40,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1067,2026-10-07 19:22:47,APP_CHAT,502 error during checkout payment confirmation
-TCK-1068,2026-10-07 19:23:51,APP_CHAT,Payment debited but order failed immediately
-TCK-1069,2026-10-07 19:24:49,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1070,2026-10-07 19:25:11,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1071,2026-10-07 19:28:53,WHATSAPP,How do I apply the Diwali discount voucher?
-TCK-1072,2026-10-07 19:29:40,APP_CHAT,502 error during checkout payment confirmation
-TCK-1073,2026-10-07 19:30:50,APP_CHAT,502 error during checkout payment confirmation
-TCK-1074,2026-10-07 19:31:35,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1075,2026-10-07 19:33:56,WHATSAPP,Need to change delivery location address
-TCK-1076,2026-10-07 19:33:58,APP_CHAT,502 error during checkout payment confirmation
-TCK-1077,2026-10-07 19:34:40,APP_CHAT,502 error during checkout payment confirmation
-TCK-1078,2026-10-07 19:36:08,APP_CHAT,Need to change delivery location address
-TCK-1079,2026-10-07 19:36:37,APP_CHAT,502 error during checkout payment confirmation
-TCK-1081,2026-10-07 19:37:03,APP_CHAT,Payment debited but order failed immediately
-TCK-1080,2026-10-07 19:37:23,IN_APP_HELP,How do I apply the Diwali discount voucher?
-TCK-1082,2026-10-07 19:38:14,APP_CHAT,Add extra carry bag to my current order
-TCK-1083,2026-10-07 19:38:26,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1084,2026-10-07 19:39:02,APP_CHAT,502 error during checkout payment confirmation
-TCK-1085,2026-10-07 19:40:00,APP_CHAT,Payment debited but order failed immediately
-TCK-1086,2026-10-07 19:41:55,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1087,2026-10-07 19:42:55,APP_CHAT,Payment debited but order failed immediately
-TCK-1088,2026-10-07 19:43:23,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1090,2026-10-07 19:45:36,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1089,2026-10-07 19:45:39,APP_CHAT,Delivery partner details missing on tracking page
-TCK-1091,2026-10-07 19:46:20,APP_CHAT,How do I apply the Diwali discount voucher?
-TCK-1092,2026-10-07 19:46:25,APP_CHAT,Payment debited but order failed immediately
-TCK-1093,2026-10-07 19:47:49,APP_CHAT,How do I apply the Diwali discount voucher?
-TCK-1094,2026-10-07 19:48:55,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1096,2026-10-07 19:49:07,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1095,2026-10-07 19:49:59,APP_CHAT,Add extra carry bag to my current order
-TCK-1097,2026-10-07 19:50:12,APP_CHAT,Payment debited but order failed immediately
-TCK-1098,2026-10-07 19:51:39,APP_CHAT,502 error during checkout payment confirmation
-TCK-1100,2026-10-07 19:52:00,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1099,2026-10-07 19:52:32,APP_CHAT,App interface is slightly sluggish today
-TCK-1101,2026-10-07 19:53:17,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1103,2026-10-07 19:54:38,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1102,2026-10-07 19:54:56,IN_APP_HELP,How do I apply the Diwali discount voucher?
-TCK-1104,2026-10-07 19:55:48,IN_APP_HELP,Delivery partner details missing on tracking page
-TCK-1105,2026-10-07 19:56:29,APP_CHAT,Need to change delivery location address
-TCK-1106,2026-10-07 19:56:34,APP_CHAT,502 error during checkout payment confirmation
-TCK-1107,2026-10-07 19:57:13,APP_CHAT,502 error during checkout payment confirmation
-TCK-1108,2026-10-07 19:58:11,APP_CHAT,502 error during checkout payment confirmation
-TCK-1109,2026-10-07 19:59:09,WHATSAPP,Delivery partner details missing on tracking page
-TCK-1111,2026-10-07 20:00:04,APP_CHAT,Payment debited but order failed immediately
-TCK-1110,2026-10-07 20:00:54,WHATSAPP,App interface is slightly sluggish today
-TCK-1112,2026-10-07 20:01:04,APP_CHAT,502 error during checkout payment confirmation
-TCK-1113,2026-10-07 20:02:33,APP_CHAT,Delivery partner details missing on tracking page
-TCK-1114,2026-10-07 20:03:05,IN_APP_HELP,Add extra carry bag to my current order
-TCK-1115,2026-10-07 20:04:40,APP_CHAT,502 error during checkout payment confirmation
-TCK-1116,2026-10-07 20:05:21,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1117,2026-10-07 20:07:04,APP_CHAT,502 error during checkout payment confirmation
-TCK-1118,2026-10-07 20:08:29,APP_CHAT,502 error during checkout payment confirmation
-TCK-1119,2026-10-07 20:10:26,IN_APP_HELP,Add extra carry bag to my current order
-TCK-1120,2026-10-07 20:10:31,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1121,2026-10-07 20:11:09,APP_CHAT,502 error during checkout payment confirmation
-TCK-1123,2026-10-07 20:12:41,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1122,2026-10-07 20:12:53,IN_APP_HELP,How do I apply the Diwali discount voucher?
-TCK-1124,2026-10-07 20:13:36,WHATSAPP,App interface is slightly sluggish today
-TCK-1125,2026-10-07 20:14:06,APP_CHAT,502 error during checkout payment confirmation
-TCK-1126,2026-10-07 20:15:25,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1128,2026-10-07 20:16:02,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1127,2026-10-07 20:16:06,APP_CHAT,Need to change delivery location address
-TCK-1129,2026-10-07 20:17:37,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1130,2026-10-07 20:18:39,APP_CHAT,App interface is slightly sluggish today
-TCK-1131,2026-10-07 20:18:40,APP_CHAT,502 error during checkout payment confirmation
-TCK-1132,2026-10-07 20:19:53,IN_APP_HELP,Need to change delivery location address
-TCK-1133,2026-10-07 20:20:43,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1134,2026-10-07 20:21:17,APP_CHAT,Payment debited but order failed immediately
-TCK-1135,2026-10-07 20:22:46,APP_CHAT,502 error during checkout payment confirmation
-TCK-1137,2026-10-07 20:23:02,APP_CHAT,Payment debited but order failed immediately
-TCK-1136,2026-10-07 20:23:57,WHATSAPP,App interface is slightly sluggish today
-TCK-1138,2026-10-07 20:24:16,IN_APP_HELP,Add extra carry bag to my current order
-TCK-1139,2026-10-07 20:25:08,WHATSAPP,Add extra carry bag to my current order
-TCK-1140,2026-10-07 20:25:43,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1141,2026-10-07 20:26:28,IN_APP_HELP,Add extra carry bag to my current order
-TCK-1142,2026-10-07 20:26:31,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1143,2026-10-07 20:27:27,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1144,2026-10-07 20:28:21,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1145,2026-10-07 20:29:28,WHATSAPP,How do I apply the Diwali discount voucher?
-TCK-1146,2026-10-07 20:29:43,APP_CHAT,Payment debited but order failed immediately
-TCK-1148,2026-10-07 20:30:23,APP_CHAT,Payment debited but order failed immediately
-TCK-1147,2026-10-07 20:30:25,APP_CHAT,Delivery partner details missing on tracking page
-TCK-1149,2026-10-07 20:31:13,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1150,2026-10-07 20:32:03,APP_CHAT,How do I apply the Diwali discount voucher?
-TCK-1151,2026-10-07 20:32:51,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1153,2026-10-07 20:33:28,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1152,2026-10-07 20:33:39,IN_APP_HELP,How do I apply the Diwali discount voucher?
-TCK-1154,2026-10-07 20:34:43,IN_APP_HELP,Delivery partner details missing on tracking page
-TCK-1155,2026-10-07 20:34:54,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1156,2026-10-07 20:35:17,IN_APP_HELP,Add extra carry bag to my current order
-TCK-1157,2026-10-07 20:35:33,APP_CHAT,Payment debited but order failed immediately
-TCK-1159,2026-10-07 20:36:17,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1158,2026-10-07 20:36:42,WHATSAPP,Need to change delivery location address
-TCK-1160,2026-10-07 20:37:40,APP_CHAT,502 error during checkout payment confirmation
-TCK-1161,2026-10-07 20:38:57,IN_APP_HELP,Delivery partner details missing on tracking page
-TCK-1162,2026-10-07 20:38:59,APP_CHAT,502 error during checkout payment confirmation
-TCK-1163,2026-10-07 20:39:41,WHATSAPP,App interface is slightly sluggish today
-TCK-1164,2026-10-07 20:40:39,APP_CHAT,Payment debited but order failed immediately
-TCK-1165,2026-10-07 20:41:00,APP_CHAT,Payment debited but order failed immediately
-TCK-1166,2026-10-07 20:42:08,IN_APP_HELP,Delivery partner details missing on tracking page
-TCK-1167,2026-10-07 20:43:50,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1169,2026-10-07 20:44:45,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1168,2026-10-07 20:44:58,IN_APP_HELP,Need to change delivery location address
-TCK-1170,2026-10-07 20:45:26,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1171,2026-10-07 20:46:02,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1172,2026-10-07 20:47:33,APP_CHAT,502 error during checkout payment confirmation
-TCK-1173,2026-10-07 20:48:48,APP_CHAT,Delivery partner details missing on tracking page
-TCK-1174,2026-10-07 20:48:53,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1175,2026-10-07 20:49:24,APP_CHAT,Payment debited but order failed immediately
-TCK-1176,2026-10-07 20:50:19,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1177,2026-10-07 20:51:26,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1178,2026-10-07 20:52:19,WHATSAPP,Delivery partner details missing on tracking page
-TCK-1179,2026-10-07 20:52:53,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1180,2026-10-07 20:53:46,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1181,2026-10-07 20:54:09,APP_CHAT,502 error during checkout payment confirmation
-TCK-1182,2026-10-07 20:55:27,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1183,2026-10-07 20:56:45,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1185,2026-10-07 20:57:44,APP_CHAT,Payment debited but order failed immediately
-TCK-1184,2026-10-07 20:57:56,APP_CHAT,Need to change delivery location address
-TCK-1186,2026-10-07 20:58:52,APP_CHAT,Payment debited but order failed immediately
-TCK-1187,2026-10-07 21:00:22,IN_APP_HELP,How do I apply the Diwali discount voucher?
-TCK-1188,2026-10-07 21:01:47,APP_CHAT,How do I apply the Diwali discount voucher?
-TCK-1189,2026-10-07 21:01:57,APP_CHAT,Payment debited but order failed immediately
-TCK-1191,2026-10-07 21:02:01,APP_CHAT,502 error during checkout payment confirmation
-TCK-1190,2026-10-07 21:02:57,APP_CHAT,How do I apply the Diwali discount voucher?
-TCK-1192,2026-10-07 21:03:24,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1194,2026-10-07 21:04:42,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1193,2026-10-07 21:04:50,WHATSAPP,Delivery partner details missing on tracking page
-TCK-1195,2026-10-07 21:05:24,IN_APP_HELP,Add extra carry bag to my current order
-TCK-1196,2026-10-07 21:06:34,APP_CHAT,Payment debited but order failed immediately
-TCK-1197,2026-10-07 21:07:03,WHATSAPP,How do I apply the Diwali discount voucher?
-TCK-1198,2026-10-07 21:07:36,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1199,2026-10-07 21:08:35,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1200,2026-10-07 21:11:07,APP_CHAT,502 error during checkout payment confirmation
-TCK-1201,2026-10-07 21:12:41,APP_CHAT,502 error during checkout payment confirmation
-TCK-1203,2026-10-07 21:13:15,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1202,2026-10-07 21:13:39,IN_APP_HELP,Delivery partner details missing on tracking page
-TCK-1204,2026-10-07 21:14:55,APP_CHAT,Payment debited but order failed immediately
-TCK-1205,2026-10-07 21:15:32,WHATSAPP,Delivery partner details missing on tracking page
-TCK-1206,2026-10-07 21:15:59,APP_CHAT,502 error during checkout payment confirmation
-TCK-1207,2026-10-07 21:16:00,APP_CHAT,502 error during checkout payment confirmation
-TCK-1209,2026-10-07 21:17:06,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1208,2026-10-07 21:17:24,APP_CHAT,Need to change delivery location address
-TCK-1211,2026-10-07 21:18:31,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1210,2026-10-07 21:18:45,IN_APP_HELP,Need to change delivery location address
-TCK-1212,2026-10-07 21:19:35,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1213,2026-10-07 21:20:01,APP_CHAT,Payment debited but order failed immediately
-TCK-1214,2026-10-07 21:21:24,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1215,2026-10-07 21:22:10,APP_CHAT,502 error during checkout payment confirmation
-TCK-1216,2026-10-07 21:23:36,WHATSAPP,Delivery partner details missing on tracking page
-TCK-1217,2026-10-07 21:23:43,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1218,2026-10-07 21:24:17,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1219,2026-10-07 21:25:05,APP_CHAT,Add extra carry bag to my current order
-TCK-1220,2026-10-07 21:26:06,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1222,2026-10-07 21:27:00,APP_CHAT,UPI amount deducted from HDFC account but order not placed
-TCK-1221,2026-10-07 21:27:26,IN_APP_HELP,Delivery partner details missing on tracking page
-TCK-1223,2026-10-07 21:28:15,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
-TCK-1224,2026-10-07 21:29:28,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
-TCK-1225,2026-10-07 21:30:47,IN_APP_HELP,How do I apply the Diwali discount voucher?
-TCK-1226,2026-10-07 21:30:49,APP_CHAT,Payment debited but order failed immediately
+TCK-1001,2026-10-07 18:00:00,IN_APP_HELP,Delivery partner details missing on tracking page
+TCK-1002,2026-10-07 18:03:48,WHATSAPP,Need to change delivery location address
+TCK-1003,2026-10-07 18:05:54,WHATSAPP,Delivery partner details missing on tracking page
+TCK-1004,2026-10-07 18:10:50,WHATSAPP,Add extra carry bag to my current order
+TCK-1005,2026-10-07 18:15:40,APP_CHAT,Delivery partner details missing on tracking page
+TCK-1006,2026-10-07 18:16:07,APP_CHAT,Need to change delivery location address
+TCK-1007,2026-10-07 18:17:36,IN_APP_HELP,Need to change delivery location address
+TCK-1008,2026-10-07 18:19:53,WHATSAPP,Delivery partner details missing on tracking page
+TCK-1009,2026-10-07 18:20:09,APP_CHAT,Add extra carry bag to my current order
+TCK-1010,2026-10-07 18:23:29,APP_CHAT,Need to change delivery location address
+TCK-1011,2026-10-07 18:26:00,APP_CHAT,Add extra carry bag to my current order
+TCK-1012,2026-10-07 18:28:50,WHATSAPP,App interface is slightly sluggish today
+TCK-1013,2026-10-07 18:32:13,WHATSAPP,Delivery partner details missing on tracking page
+TCK-1014,2026-10-07 18:33:08,WHATSAPP,Add extra carry bag to my current order
+TCK-1015,2026-10-07 18:40:01,WHATSAPP,Add extra carry bag to my current order
+TCK-1016,2026-10-07 18:42:10,IN_APP_HELP,Delivery partner details missing on tracking page
+TCK-1017,2026-10-07 18:48:08,WHATSAPP,Add extra carry bag to my current order
+TCK-1019,2026-10-07 18:49:21,IN_APP_HELP,Darkstore packing status not updating
+TCK-1018,2026-10-07 18:49:41,APP_CHAT,App interface is slightly sluggish today
+TCK-1020,2026-10-07 18:50:07,WHATSAPP,Need to change delivery location address
+TCK-1021,2026-10-07 18:50:49,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1022,2026-10-07 18:53:14,WHATSAPP,How do I apply the Diwali discount voucher?
+TCK-1023,2026-10-07 18:53:32,IN_APP_HELP,Darkstore packing status not updating
+TCK-1024,2026-10-07 18:55:56,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1025,2026-10-07 18:56:24,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1026,2026-10-07 18:57:39,IN_APP_HELP,Need to change delivery location address
+TCK-1027,2026-10-07 18:59:54,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1028,2026-10-07 19:00:10,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1029,2026-10-07 19:00:37,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1031,2026-10-07 19:01:16,IN_APP_HELP,Darkstore packing status not updating
+TCK-1030,2026-10-07 19:01:56,APP_CHAT,Payment debited but order failed immediately
+TCK-1032,2026-10-07 19:02:56,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1033,2026-10-07 19:03:15,APP_CHAT,How do I apply the Diwali discount voucher?
+TCK-1035,2026-10-07 19:03:31,IN_APP_HELP,Darkstore packing status not updating
+TCK-1034,2026-10-07 19:03:53,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1037,2026-10-07 19:04:04,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1036,2026-10-07 19:04:33,APP_CHAT,Add extra carry bag to my current order
+TCK-1038,2026-10-07 19:04:57,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1040,2026-10-07 19:05:35,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1039,2026-10-07 19:05:56,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1041,2026-10-07 19:06:30,IN_APP_HELP,Darkstore packing status not updating
+TCK-1042,2026-10-07 19:07:10,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1044,2026-10-07 19:08:15,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1043,2026-10-07 19:08:59,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1045,2026-10-07 19:09:32,APP_CHAT,App interface is slightly sluggish today
+TCK-1046,2026-10-07 19:09:42,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1048,2026-10-07 19:10:21,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1047,2026-10-07 19:10:36,WHATSAPP,Add extra carry bag to my current order
+TCK-1049,2026-10-07 19:11:52,APP_CHAT,Payment debited but order failed immediately
+TCK-1050,2026-10-07 19:12:03,WHATSAPP,How do I apply the Diwali discount voucher?
+TCK-1051,2026-10-07 19:12:15,APP_CHAT,Rain delay reported by delivery partner
+TCK-1052,2026-10-07 19:13:55,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1053,2026-10-07 19:14:42,APP_CHAT,Add extra carry bag to my current order
+TCK-1054,2026-10-07 19:15:21,APP_CHAT,Payment debited but order failed immediately
+TCK-1055,2026-10-07 19:15:39,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1057,2026-10-07 19:16:32,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1056,2026-10-07 19:16:39,APP_CHAT,App interface is slightly sluggish today
+TCK-1058,2026-10-07 19:17:12,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1059,2026-10-07 19:18:52,APP_CHAT,Rain delay reported by delivery partner
+TCK-1061,2026-10-07 19:19:16,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1060,2026-10-07 19:19:42,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1062,2026-10-07 19:21:55,IN_APP_HELP,Add extra carry bag to my current order
+TCK-1064,2026-10-07 19:22:15,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1063,2026-10-07 19:22:33,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1066,2026-10-07 19:23:45,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1065,2026-10-07 19:23:47,APP_CHAT,502 error during checkout payment confirmation
+TCK-1068,2026-10-07 19:24:42,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1069,2026-10-07 19:24:44,APP_CHAT,Rain delay reported by delivery partner
+TCK-1067,2026-10-07 19:24:51,IN_APP_HELP,Delivery partner details missing on tracking page
+TCK-1071,2026-10-07 19:25:26,APP_CHAT,Rain delay reported by delivery partner
+TCK-1070,2026-10-07 19:25:53,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1072,2026-10-07 19:26:15,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1075,2026-10-07 19:28:00,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1073,2026-10-07 19:28:44,APP_CHAT,Add extra carry bag to my current order
+TCK-1074,2026-10-07 19:28:49,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1076,2026-10-07 19:29:18,APP_CHAT,Add extra carry bag to my current order
+TCK-1077,2026-10-07 19:30:09,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1079,2026-10-07 19:32:02,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1078,2026-10-07 19:32:10,WHATSAPP,Need to change delivery location address
+TCK-1080,2026-10-07 19:33:00,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1082,2026-10-07 19:34:10,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1081,2026-10-07 19:34:25,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1084,2026-10-07 19:35:15,APP_CHAT,Payment debited but order failed immediately
+TCK-1083,2026-10-07 19:35:38,APP_CHAT,Delivery partner details missing on tracking page
+TCK-1085,2026-10-07 19:35:41,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1087,2026-10-07 19:36:20,APP_CHAT,Payment debited but order failed immediately
+TCK-1086,2026-10-07 19:36:51,WHATSAPP,Need to change delivery location address
+TCK-1089,2026-10-07 19:37:51,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1088,2026-10-07 19:37:55,APP_CHAT,Delivery partner details missing on tracking page
+TCK-1090,2026-10-07 19:38:06,WHATSAPP,Delivery partner details missing on tracking page
+TCK-1092,2026-10-07 19:38:16,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1091,2026-10-07 19:38:54,IN_APP_HELP,Darkstore packing status not updating
+TCK-1093,2026-10-07 19:39:25,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1095,2026-10-07 19:40:03,APP_CHAT,Rain delay reported by delivery partner
+TCK-1094,2026-10-07 19:40:49,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1096,2026-10-07 19:42:25,APP_CHAT,Need to change delivery location address
+TCK-1097,2026-10-07 19:42:54,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1098,2026-10-07 19:43:41,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1099,2026-10-07 19:44:00,IN_APP_HELP,Add extra carry bag to my current order
+TCK-1101,2026-10-07 19:46:14,IN_APP_HELP,Darkstore packing status not updating
+TCK-1102,2026-10-07 19:46:53,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1100,2026-10-07 19:46:56,APP_CHAT,502 error during checkout payment confirmation
+TCK-1104,2026-10-07 19:48:47,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1103,2026-10-07 19:48:52,APP_CHAT,Add extra carry bag to my current order
+TCK-1105,2026-10-07 19:49:14,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1106,2026-10-07 19:50:01,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1107,2026-10-07 19:50:18,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1108,2026-10-07 19:50:37,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1110,2026-10-07 19:51:28,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1111,2026-10-07 19:51:28,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1109,2026-10-07 19:51:55,IN_APP_HELP,App interface is slightly sluggish today
+TCK-1112,2026-10-07 19:52:37,IN_APP_HELP,Add extra carry bag to my current order
+TCK-1113,2026-10-07 19:52:54,APP_CHAT,Rain delay reported by delivery partner
+TCK-1115,2026-10-07 19:53:07,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1114,2026-10-07 19:53:28,APP_CHAT,Payment debited but order failed immediately
+TCK-1116,2026-10-07 19:54:14,IN_APP_HELP,Need to change delivery location address
+TCK-1117,2026-10-07 19:54:17,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1118,2026-10-07 19:54:30,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1119,2026-10-07 19:55:15,WHATSAPP,Add extra carry bag to my current order
+TCK-1120,2026-10-07 19:55:31,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1121,2026-10-07 19:56:18,APP_CHAT,How do I apply the Diwali discount voucher?
+TCK-1122,2026-10-07 19:56:54,APP_CHAT,Payment debited but order failed immediately
+TCK-1123,2026-10-07 19:57:10,IN_APP_HELP,Delivery partner details missing on tracking page
+TCK-1124,2026-10-07 19:58:23,IN_APP_HELP,Add extra carry bag to my current order
+TCK-1125,2026-10-07 19:58:37,IN_APP_HELP,Darkstore packing status not updating
+TCK-1126,2026-10-07 19:59:04,WHATSAPP,App interface is slightly sluggish today
+TCK-1127,2026-10-07 19:59:11,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1128,2026-10-07 19:59:57,APP_CHAT,Rain delay reported by delivery partner
+TCK-1130,2026-10-07 20:00:05,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1129,2026-10-07 20:00:50,IN_APP_HELP,App interface is slightly sluggish today
+TCK-1133,2026-10-07 20:01:29,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1131,2026-10-07 20:01:45,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1132,2026-10-07 20:01:47,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1134,2026-10-07 20:02:01,IN_APP_HELP,Add extra carry bag to my current order
+TCK-1135,2026-10-07 20:02:54,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1136,2026-10-07 20:04:36,WHATSAPP,How do I apply the Diwali discount voucher?
+TCK-1137,2026-10-07 20:04:36,APP_CHAT,502 error during checkout payment confirmation
+TCK-1138,2026-10-07 20:05:32,IN_APP_HELP,Darkstore packing status not updating
+TCK-1139,2026-10-07 20:06:02,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1140,2026-10-07 20:06:04,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1141,2026-10-07 20:06:25,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1142,2026-10-07 20:07:08,APP_CHAT,502 error during checkout payment confirmation
+TCK-1143,2026-10-07 20:07:45,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1144,2026-10-07 20:08:37,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1145,2026-10-07 20:08:42,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1146,2026-10-07 20:09:35,APP_CHAT,Rain delay reported by delivery partner
+TCK-1148,2026-10-07 20:10:02,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1147,2026-10-07 20:10:32,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1150,2026-10-07 20:11:52,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1149,2026-10-07 20:11:52,IN_APP_HELP,Add extra carry bag to my current order
+TCK-1151,2026-10-07 20:12:47,WHATSAPP,How do I apply the Diwali discount voucher?
+TCK-1152,2026-10-07 20:13:19,APP_CHAT,Need to change delivery location address
+TCK-1154,2026-10-07 20:13:19,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1153,2026-10-07 20:13:40,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1156,2026-10-07 20:14:09,APP_CHAT,Payment debited but order failed immediately
+TCK-1155,2026-10-07 20:14:23,APP_CHAT,Need to change delivery location address
+TCK-1157,2026-10-07 20:14:40,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1158,2026-10-07 20:16:32,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1159,2026-10-07 20:17:17,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1161,2026-10-07 20:18:10,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1160,2026-10-07 20:18:37,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1164,2026-10-07 20:19:10,APP_CHAT,Rain delay reported by delivery partner
+TCK-1163,2026-10-07 20:19:17,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1162,2026-10-07 20:19:39,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1167,2026-10-07 20:20:06,APP_CHAT,Rain delay reported by delivery partner
+TCK-1165,2026-10-07 20:20:07,APP_CHAT,502 error during checkout payment confirmation
+TCK-1166,2026-10-07 20:20:32,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1168,2026-10-07 20:23:13,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1169,2026-10-07 20:24:02,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1170,2026-10-07 20:25:02,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1171,2026-10-07 20:25:09,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1172,2026-10-07 20:26:39,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1174,2026-10-07 20:27:43,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1173,2026-10-07 20:27:57,APP_CHAT,502 error during checkout payment confirmation
+TCK-1175,2026-10-07 20:29:20,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1178,2026-10-07 20:30:17,APP_CHAT,Rain delay reported by delivery partner
+TCK-1177,2026-10-07 20:30:48,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1176,2026-10-07 20:30:48,APP_CHAT,How do I apply the Diwali discount voucher?
+TCK-1180,2026-10-07 20:31:23,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1179,2026-10-07 20:31:31,WHATSAPP,App interface is slightly sluggish today
+TCK-1182,2026-10-07 20:32:05,APP_CHAT,Payment debited but order failed immediately
+TCK-1184,2026-10-07 20:32:07,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1183,2026-10-07 20:32:11,IN_APP_HELP,Darkstore packing status not updating
+TCK-1181,2026-10-07 20:32:25,IN_APP_HELP,Need to change delivery location address
+TCK-1185,2026-10-07 20:33:52,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1186,2026-10-07 20:34:03,APP_CHAT,Delivery partner details missing on tracking page
+TCK-1187,2026-10-07 20:35:37,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1188,2026-10-07 20:36:36,IN_APP_HELP,How do I apply the Diwali discount voucher?
+TCK-1189,2026-10-07 20:36:36,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1190,2026-10-07 20:36:51,APP_CHAT,Rain delay reported by delivery partner
+TCK-1192,2026-10-07 20:37:05,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1191,2026-10-07 20:37:12,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1193,2026-10-07 20:38:14,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1194,2026-10-07 20:38:48,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1195,2026-10-07 20:39:12,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1196,2026-10-07 20:40:32,IN_APP_HELP,How do I apply the Diwali discount voucher?
+TCK-1197,2026-10-07 20:41:08,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1198,2026-10-07 20:42:45,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1200,2026-10-07 20:43:21,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1199,2026-10-07 20:43:59,IN_APP_HELP,Add extra carry bag to my current order
+TCK-1201,2026-10-07 20:44:02,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1202,2026-10-07 20:44:24,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1203,2026-10-07 20:45:05,IN_APP_HELP,Need to change delivery location address
+TCK-1205,2026-10-07 20:46:21,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1204,2026-10-07 20:46:40,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1207,2026-10-07 20:47:05,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1206,2026-10-07 20:47:13,IN_APP_HELP,Need to change delivery location address
+TCK-1208,2026-10-07 20:47:34,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1209,2026-10-07 20:48:03,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1210,2026-10-07 20:48:41,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1212,2026-10-07 20:49:07,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1213,2026-10-07 20:49:24,IN_APP_HELP,Darkstore packing status not updating
+TCK-1211,2026-10-07 20:49:51,WHATSAPP,How do I apply the Diwali discount voucher?
+TCK-1214,2026-10-07 20:49:57,APP_CHAT,Rain delay reported by delivery partner
+TCK-1215,2026-10-07 20:50:57,APP_CHAT,502 error during checkout payment confirmation
+TCK-1216,2026-10-07 20:51:26,IN_APP_HELP,How do I apply the Diwali discount voucher?
+TCK-1217,2026-10-07 20:52:43,IN_APP_HELP,Need to change delivery location address
+TCK-1218,2026-10-07 20:53:34,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1219,2026-10-07 20:53:39,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1221,2026-10-07 20:54:20,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1220,2026-10-07 20:54:28,IN_APP_HELP,Delivery partner details missing on tracking page
+TCK-1222,2026-10-07 20:55:45,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1223,2026-10-07 20:57:11,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1224,2026-10-07 20:58:19,APP_CHAT,502 error during checkout payment confirmation
+TCK-1225,2026-10-07 20:58:48,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1226,2026-10-07 20:59:53,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1228,2026-10-07 21:00:19,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1227,2026-10-07 21:00:24,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1230,2026-10-07 21:01:16,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1229,2026-10-07 21:01:38,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1231,2026-10-07 21:02:08,WHATSAPP,App interface is slightly sluggish today
+TCK-1233,2026-10-07 21:02:14,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1232,2026-10-07 21:02:31,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1234,2026-10-07 21:03:08,APP_CHAT,App interface is slightly sluggish today
+TCK-1235,2026-10-07 21:03:16,APP_CHAT,502 error during checkout payment confirmation
+TCK-1237,2026-10-07 21:05:31,APP_CHAT,Rain delay reported by delivery partner
+TCK-1236,2026-10-07 21:05:39,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1239,2026-10-07 21:06:05,APP_CHAT,Rain delay reported by delivery partner
+TCK-1238,2026-10-07 21:06:48,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1240,2026-10-07 21:07:48,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1241,2026-10-07 21:08:21,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1243,2026-10-07 21:09:29,APP_CHAT,Rain delay reported by delivery partner
+TCK-1242,2026-10-07 21:09:30,APP_CHAT,502 error during checkout payment confirmation
+TCK-1245,2026-10-07 21:10:04,IN_APP_HELP,Darkstore packing status not updating
+TCK-1246,2026-10-07 21:10:04,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1244,2026-10-07 21:10:44,APP_CHAT,Payment debited but order failed immediately
+TCK-1247,2026-10-07 21:11:07,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1248,2026-10-07 21:11:28,APP_CHAT,Rain delay reported by delivery partner
+TCK-1249,2026-10-07 21:12:41,IN_APP_HELP,Need to change delivery location address
+TCK-1250,2026-10-07 21:13:51,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1252,2026-10-07 21:15:35,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1251,2026-10-07 21:15:59,APP_CHAT,502 error during checkout payment confirmation
+TCK-1254,2026-10-07 21:16:19,APP_CHAT,502 error during checkout payment confirmation
+TCK-1253,2026-10-07 21:16:39,IN_APP_HELP,Add extra carry bag to my current order
+TCK-1256,2026-10-07 21:17:36,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1255,2026-10-07 21:17:44,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1258,2026-10-07 21:18:32,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1257,2026-10-07 21:18:44,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1260,2026-10-07 21:19:34,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1259,2026-10-07 21:19:39,APP_CHAT,Bank sent debit SMS but app shows transaction pending/failed
+TCK-1261,2026-10-07 21:21:16,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1262,2026-10-07 21:21:35,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1264,2026-10-07 21:22:32,IN_APP_HELP,"Items being picked for over 30 mins, dispatch delayed"
+TCK-1263,2026-10-07 21:22:59,IN_APP_HELP,Need to change delivery location address
+TCK-1266,2026-10-07 21:23:05,APP_CHAT,Heavy rain and waterlogging near Koramangala 4th block
+TCK-1265,2026-10-07 21:23:58,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1267,2026-10-07 21:24:16,WHATSAPP,Add extra carry bag to my current order
+TCK-1268,2026-10-07 21:24:20,IN_APP_HELP,Order stuck in packing state for 25 minutes
+TCK-1271,2026-10-07 21:25:14,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1270,2026-10-07 21:25:23,APP_CHAT,Payment gateway Alpha timed out after UPI PIN
+TCK-1269,2026-10-07 21:25:35,IN_APP_HELP,App interface is slightly sluggish today
+TCK-1272,2026-10-07 21:26:02,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1273,2026-10-07 21:26:52,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1275,2026-10-07 21:27:26,APP_CHAT,502 error during checkout payment confirmation
+TCK-1274,2026-10-07 21:27:46,WHATSAPP,Add extra carry bag to my current order
+TCK-1276,2026-10-07 21:27:52,APP_CHAT,"Severe water logging outside apartment gate, rider unable to reach"
+TCK-1278,2026-10-07 21:28:39,APP_CHAT,Rain delay reported by delivery partner
+TCK-1277,2026-10-07 21:28:42,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1279,2026-10-07 21:29:51,APP_CHAT,UPI amount deducted from HDFC account but order not placed
+TCK-1281,2026-10-07 21:30:07,APP_CHAT,Delivery partner not moving due to thunderstorm and waterlogged roads
+TCK-1280,2026-10-07 21:30:43,APP_CHAT,UPI amount deducted from HDFC account but order not placed
