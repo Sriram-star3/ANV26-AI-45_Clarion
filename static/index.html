@@ -696,8 +696,9 @@
                         r={isSelected ? 14 : 10}
                         fill={color}
                         stroke={isSelected ? "#ffffff" : "#0f172a"}
-                        strokeWidth="3"
-                        className="transition-all duration-200 group-hover:scale-125"
+                        strokeWidth={isSelected ? 4 : 3}
+                        style={{ transformOrigin: "center", transformBox: "fill-box" }}
+                        className="transition-all duration-150 group-hover:stroke-white group-hover:stroke-[4px]"
                       />
                       <rect
                         x={x - 85}
