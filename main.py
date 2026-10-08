@@ -1,26 +1,39 @@
 """HTTP API service and static file server for Clarion causal reasoning engine.
 
-Thin FastAPI application wiring HTTP endpoints to adapters, reasoning engine,
+Orchestrates reasoning engine, incident history, feedback persistence, webhook alerts,
 and deterministic data generation.
 """
 
 from __future__ import annotations
 
-import json
 from contextlib import asynccontextmanager
+import json
 from pathlib import Path
-from typing import Any
-from fastapi import FastAPI, HTTPException, Query, Response
-from fastapi.responses import PlainTextResponse
+from typing import Any, Optional
+
+from fastapi import FastAPI, HTTPException, Query, Response, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from adapters import build_registry
+from core.db import get_incident_by_id, get_incident_history, init_db, save_feedback
+from core.webhooks import router as webhook_router
 from engine import build_dossier, run_investigation, run_robustness
 from generate_data import generate_scenario
 
 DATA_DIR = Path("data")
 CONFIG_PATH = Path("config.json")
 STATIC_DIR = Path("static")
+
+
+class FeedbackRequest(BaseModel):
+    """Payload schema for submitting operator hypothesis feedback."""
+
+    dossier_id: str
+    hypothesis_id: str
+    feedback_type: str
 
 
 def _load_config() -> dict[str, Any]:
@@ -53,7 +66,8 @@ def _ensure_data_ready(scenario: str = "festival_deadlock", seed: int = 42) -> N
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Ensure data directory and default festival_deadlock scenario exist on startup."""
+    """Ensure database, static dir, and default scenario dataset exist on startup."""
+    init_db()
     STATIC_DIR.mkdir(parents=True, exist_ok=True)
     _ensure_data_ready(scenario="festival_deadlock", seed=42)
     yield
@@ -66,11 +80,38 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include webhook routers
+app.include_router(webhook_router)
+
+
+@app.get("/healthz")
+def get_healthz() -> dict[str, str]:
+    """Return backend health check metadata."""
+    return {"status": "healthy", "service": "clarion-backend"}
+
 
 @app.get("/api/health")
 def get_health() -> dict[str, str]:
     """Return service health status and version metadata."""
     return {"status": "ok", "service": "Clarion", "version": "1.0.0"}
+
+
+@app.get("/", response_class=FileResponse)
+def get_root() -> Response:
+    """Serve frontend dashboard index.html at root if present."""
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return PlainTextResponse("Clarion Causal Reasoning Engine", status_code=status.HTTP_200_OK)
 
 
 @app.post("/api/generate-data")
@@ -174,7 +215,45 @@ def get_robustness(
         raise HTTPException(status_code=500, detail=f"Robustness analysis failed: {str(exc)}") from exc
 
 
-# Serve static web dashboard
-if not STATIC_DIR.exists():
-    STATIC_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+# History API endpoints
+@app.get("/api/v1/history")
+def get_history(search: Optional[str] = Query(None, description="Filter by dossier ID or root cause")) -> list[dict[str, Any]]:
+    """Retrieve historical investigated incidents ordered by timestamp descending."""
+    return get_incident_history(search_query=search)
+
+
+@app.get("/api/v1/history/{dossier_id}")
+def get_history_item(dossier_id: str) -> dict[str, Any]:
+    """Retrieve a single incident record by dossier ID."""
+    incident = get_incident_by_id(dossier_id)
+    if incident is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Dossier not found",
+        )
+    return incident
+
+
+# Feedback API endpoint
+@app.post("/api/v1/feedback", status_code=status.HTTP_200_OK)
+def post_feedback(req: FeedbackRequest) -> dict[str, str]:
+    """Record operator confirmation or rejection feedback for an incident hypothesis."""
+    if req.feedback_type not in ["confirm", "reject"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid feedback_type '{req.feedback_type}'. Must be 'confirm' or 'reject'.",
+        )
+    save_feedback(
+        dossier_id=req.dossier_id,
+        hypothesis_id=req.hypothesis_id,
+        feedback_type=req.feedback_type,
+    )
+    return {"status": "recorded", "dossier_id": req.dossier_id}
+
+
+# Mount static assets
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+    vendor_dir = STATIC_DIR / "vendor"
+    if vendor_dir.exists():
+        app.mount("/vendor", StaticFiles(directory=vendor_dir), name="vendor")
