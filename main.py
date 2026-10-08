@@ -17,6 +17,11 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 import uuid
+from fastapi import FastAPI, Query
+from fastapi.staticfiles import StaticFiles
+import duckdb
+
+
 import psutil
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, Response, UploadFile, status
@@ -25,6 +30,8 @@ from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from fastapi import FastAPI
+import duckdb
 from adapters import build_registry
 from core.auth import verify_sre_role
 from core.db import (
@@ -234,10 +241,7 @@ def get_healthz() -> dict[str, str]:
     return {"status": "healthy", "service": "clarion-backend"}
 
 
-@app.get("/api/health")
-def get_health() -> dict[str, str]:
-    """Return service health status and version metadata."""
-    return {"status": "ok", "service": "Clarion", "version": "1.0.0"}
+
 
 
 @app.get("/api/v1/telemetry/live")

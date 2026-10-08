@@ -1,3 +1,32 @@
+# Clarion Multi-Developer Boundary Rules
+
+## Role 1: SW (Backend, Database & Webhooks)
+- Allowed Files:
+  - main.py
+  - core/engine.py
+  - core/db.py
+  - core/webhooks.py
+  - core/auth.py
+- Forbidden Files: static/*, data/*, feedback/*
+
+## Role 2: SR (Frontend UI, Business Mode & Reports Specialist)
+- Allowed Files:
+  - static/index.html
+  - static/js/business_view.js
+  - static/js/history_modal.js
+  - static/js/slack_export.js
+  - static/js/confidence_modal.js
+- Forbidden Files: *.py (all Python core backend), data/*, feedback/*
+
+## Role 3: SU (Data Pipeline, Scenarios & DevOps Lead)
+- Allowed Files:
+  - data/upload_parser.py
+  - data/scenarios/scenario_3.json
+  - feedback/feedback_store.py
+  - Dockerfile
+  - render.yaml
+  - tests/test_scenarios.py
+- Forbidden Files: main.py, core/engine.py, static/*
 ROLE & STRICT FILE BOUNDARY RULES FOR SW:
 You are the Backend & Core Engine Lead for Clarion.
 
