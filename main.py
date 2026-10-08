@@ -5,6 +5,8 @@ and deterministic data generation.
 """
 
 from __future__ import annotations
+from starlette.middleware.sessions import SessionMiddleware
+from core.auth import router as auth_router, get_current_user
 
 from contextlib import asynccontextmanager
 import csv
@@ -16,7 +18,7 @@ from pathlib import Path
 from typing import Any, Optional
 import uuid
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Response, UploadFile, status
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
@@ -52,26 +54,26 @@ CLUSTER_PEERING_TOKEN = "clarion-peer-cluster-token"
 
 
 async def verify_sre_auth(
+    request: Request,
     x_clarion_role: Optional[str] = Header(None, alias="X-Clarion-Role"),
     authorization: Optional[str] = Header(None),
 ):
-    """
-    Enforces Role-Based Access Control for operational mutation routes.
-    Requires role 'sre-lead' and valid Bearer credentials.
-    """
-    if x_clarion_role != "sre-lead":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="RBAC Enforcement: Only authenticated SRE leads may mutate Bayesian priors.",
-        )
+    # Check 1: Authenticated Google OAuth Session (Browser UI)
+    session_user = request.session.get("user")
+    if session_user and session_user.get("role") == "sre-lead":
+        return {"role": "sre-lead", "user": session_user, "auth_type": "google_oidc"}
 
-    expected_bearer = f"Bearer {SRE_LEAD_TOKEN}"
-    if authorization != expected_bearer:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed: Invalid or missing SRE bearer token.",
-        )
-    return {"role": x_clarion_role, "authenticated": True}
+    # Check 2: API Token & Header Fallback (CLI / Peering / Automation)
+    valid_role = x_clarion_role == "sre-lead"
+    valid_bearer = authorization == "Bearer clarion-sre-lead-2026"
+    if valid_role or valid_bearer:
+        return {"role": "sre-lead", "auth_type": "bearer_token"}
+
+    # Reject unauthenticated requests
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="RBAC Forbidden: Only authenticated company SRE leads may mutate Bayesian priors."
+    )
 
 
 async def verify_peering_auth(
@@ -140,6 +142,15 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="clarion-super-secure-session-key-2026",
+    session_cookie="clarion_session",
+    max_age=86400,  # 24-hour TTL
+)
+
+app.include_router(auth_router)
 
 
 # SPRT engine used by the live telemetry peering gateway.
