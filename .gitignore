@@ -1,0 +1,33 @@
+# Python / Virtual Environment
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database & Local Stores
+clarion.db
+*.sqlite
+*.sqlite3
+feedback.json
+
+# Test & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / JS
+node_modules/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Clarion generated data (keep structure, ignore dynamic CSVs/manifests)
+data/*.csv
+data/manifest.json
+!data/scenarios/
