@@ -15,13 +15,14 @@ from pathlib import Path
 from typing import Any, Optional
 import uuid
 
-from fastapi import FastAPI, File, HTTPException, Query, Response, UploadFile, status
+from fastapi import Depends, FastAPI, File, HTTPException, Query, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from adapters import build_registry
+from core.auth import verify_sre_role
 from core.db import (
     get_incident_by_id,
     get_incident_history,
@@ -118,6 +119,33 @@ def get_healthz() -> dict[str, str]:
 def get_health() -> dict[str, str]:
     """Return service health status and version metadata."""
     return {"status": "ok", "service": "Clarion", "version": "1.0.0"}
+
+
+@app.get("/api/warmup")
+def get_warmup() -> dict[str, Any]:
+    """Execute cold-start warm-up query on DuckDB and pre-load engine structures in memory."""
+    import time
+    t0 = time.perf_counter()
+    try:
+        import duckdb
+        conn = duckdb.connect(":memory:")
+        conn.execute("SELECT 1").fetchall()
+        conn.close()
+    except Exception:
+        pass
+
+    try:
+        import numpy as np
+        _ = np.zeros((3, 10), dtype=np.float64)
+    except Exception:
+        pass
+
+    warmup_time_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+    return {
+        "status": "warm",
+        "engine": "DuckDB & NumPy in-memory ready",
+        "warmup_time_ms": warmup_time_ms,
+    }
 
 
 @app.get("/", response_class=FileResponse)
@@ -251,7 +279,10 @@ def get_history_item(dossier_id: str) -> dict[str, Any]:
 
 # Feedback API endpoint
 @app.post("/api/v1/feedback", status_code=status.HTTP_200_OK)
-def post_feedback(req: FeedbackRequest) -> dict[str, str]:
+def post_feedback(
+    req: FeedbackRequest,
+    operator: dict = Depends(verify_sre_role),
+) -> dict[str, Any]:
     """Record operator confirmation or rejection feedback for an incident hypothesis."""
     if req.feedback_type not in ["confirm", "reject"]:
         raise HTTPException(
@@ -263,7 +294,12 @@ def post_feedback(req: FeedbackRequest) -> dict[str, str]:
         hypothesis_id=req.hypothesis_id,
         feedback_type=req.feedback_type,
     )
-    return {"status": "recorded", "dossier_id": req.dossier_id}
+    return {
+        "status": "recorded",
+        "dossier_id": req.dossier_id,
+        "operator": operator.get("user", "anonymous"),
+        "role": operator.get("role", "viewer"),
+    }
 
 
 # Upload telemetry ingestion endpoint
