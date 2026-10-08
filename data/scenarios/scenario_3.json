@@ -1,0 +1,24 @@
+{
+  "scenario_id": "scenario_3",
+  "title": "High-Cardinality Microservice Cascade",
+  "description": "Thread pool exhaustion causing cascading timeouts across high-cardinality tenant nodes.",
+  "metrics": [
+    {
+      "timestamp": "2026-10-09T04:00:00Z",
+      "service": "auth-service",
+      "latency_ms": 4500,
+      "error_rate": 0.35,
+      "active_threads": 512,
+      "tenant_id": "tenant-8912"
+    },
+    {
+      "timestamp": "2026-10-09T04:01:00Z",
+      "service": "payment-pipeline",
+      "latency_ms": 12000,
+      "error_rate": 0.88,
+      "active_threads": 1024,
+      "tenant_id": "tenant-4401"
+    }
+  ]
+}
+
