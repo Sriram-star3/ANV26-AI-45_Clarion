@@ -76,21 +76,65 @@
       const [showDossierModal, setShowDossierModal] = useState(false);
       const [dossierMarkdown, setDossierMarkdown] = useState("");
       const [dossierId, setDossierId] = useState("");
-      const traceEndRef = useRef(null);
 
-      // Auto-load initial investigation on mount
+      const terminalContainerRef = useRef(null);
+      const lowerSectionRef = useRef(null);
+      const intervalRef = useRef(null);
+      const timeoutRef = useRef(null);
+      const timeoutVerdictRef = useRef(null);
+
+      // Safe cleanup of all timers
+      const clearTimers = () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        if (timeoutVerdictRef.current) {
+          clearTimeout(timeoutVerdictRef.current);
+          timeoutVerdictRef.current = null;
+        }
+      };
+
+      // Cleanup on unmount
+      useEffect(() => {
+        return () => clearTimers();
+      }, []);
+
+      // Auto-load initial investigation on scenario or backend change
       useEffect(() => {
         handleInject(false);
+        return () => clearTimers();
       }, [scenario, backend]);
 
+      // Auto-scroll trace terminal as new steps arrive without scrolling the window
+      useEffect(() => {
+        if (phase === "streaming_trace" && terminalContainerRef.current) {
+          terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
+        }
+      }, [streamedSteps, phase]);
+
+      // Smoothly scroll window to align top of lower section when entering trace or verdict
+      useEffect(() => {
+        if ((phase === "streaming_trace" || phase === "verdict") && lowerSectionRef.current) {
+          lowerSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, [phase]);
+
+      const isBusy = loading || phase === "naive_alert" || phase === "streaming_trace";
+
       const handleInject = async (animate = true) => {
+        clearTimers();
         setLoading(true);
         try {
           const res = await fetch(`/api/investigate?scenario=${scenario}&backend=${backend}`);
           if (!res.ok) throw new Error("Investigation request failed");
           const data = await res.json();
           setResult(data);
-          setDossierId(data.dossier_id);
+          setDossierId(data?.dossier_id || "");
 
           // Fetch robustness in background
           fetch(`/api/robustness?scenario=${scenario}&backend=${backend}`)
@@ -99,35 +143,48 @@
             .catch(() => {});
 
           if (animate) {
-            // Phase flow:
-            // 1) naive alert for 3 seconds
+            // Phase 1: naive alert for ~2.8s
             setPhase("naive_alert");
             setStreamedSteps([]);
-            setTimeout(() => {
-              // 2) stream agent trace step by step
+            timeoutRef.current = setTimeout(() => {
+              // Phase 2: stream agent trace step by step
               setPhase("streaming_trace");
-              streamTraceSteps(data.trace);
+              streamTraceSteps(data?.trace || []);
             }, 2800);
           } else {
-            setStreamedSteps(data.trace || []);
+            setStreamedSteps(data?.trace || []);
             setPhase("verdict");
           }
         } catch (err) {
-          console.error(err);
+          console.error("Investigation error:", err);
+          setPhase("verdict");
         } finally {
           setLoading(false);
         }
       };
 
       const streamTraceSteps = (allSteps) => {
+        clearTimers();
+        if (!Array.isArray(allSteps) || allSteps.length === 0) {
+          setStreamedSteps([]);
+          setPhase("verdict");
+          return;
+        }
+
         let currentIdx = 0;
-        const interval = setInterval(() => {
+        intervalRef.current = setInterval(() => {
           if (currentIdx < allSteps.length) {
-            setStreamedSteps(prev => [...prev, allSteps[currentIdx]]);
+            const step = allSteps[currentIdx];
+            if (step) {
+              setStreamedSteps(prev => [...prev, step]);
+            }
             currentIdx++;
           } else {
-            clearInterval(interval);
-            setTimeout(() => {
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+              intervalRef.current = null;
+            }
+            timeoutVerdictRef.current = setTimeout(() => {
               setPhase("verdict");
             }, 400);
           }
@@ -138,10 +195,10 @@
         try {
           const res = await fetch(`/api/dossier?scenario=${scenario}&backend=${backend}`);
           const data = await res.json();
-          setDossierMarkdown(data.markdown);
+          setDossierMarkdown(data?.markdown || "");
           setShowDossierModal(true);
         } catch (e) {
-          console.error(e);
+          console.error("Dossier error:", e);
         }
       };
 
@@ -164,11 +221,48 @@
         );
       }
 
-      const { anomaly, naive_alert, ranked, graph, remediation, roi } = result;
+      // Safe fallbacks to prevent any null/undefined access
+      const anomaly = result?.anomaly || {
+        drop_pct: 0,
+        baseline: 0,
+        incident: 0,
+        onset: "Unknown",
+        window: { baseline: "18:30-18:44", incident: "18:49-21:30" },
+      };
 
-      // Identify Root Cause vs Red Herring dynamically from verdicts
-      const rootCause = ranked.find(r => r.verdict === "ROOT_CAUSE") || ranked[0];
-      const redHerring = ranked.find(r => r.verdict === "SUPPRESSED_NOISE") || ranked[ranked.length - 1];
+      const naive_alert = result?.naive_alert || {
+        metric: "payment_502_count",
+        label: "Payment Gateway 502 Surge",
+        sigma: 0,
+        onset: "Unknown",
+        severity: "CRITICAL",
+      };
+
+      const ranked = Array.isArray(result?.ranked) ? result.ranked : [];
+      const graphNodes = Array.isArray(result?.graph?.nodes) ? result.graph.nodes : [];
+      const graphEdges = Array.isArray(result?.graph?.edges) ? result.graph.edges : [];
+      const remediation = Array.isArray(result?.remediation) ? result.remediation : [];
+      const roi = result?.roi || {
+        manual_s: 16200,
+        e2e_s: 90,
+        reduction_pct: 99.44,
+        compute_ms: 0,
+        note: "",
+      };
+
+      const defaultHyp = {
+        id: "H3",
+        name: "Hypothesis",
+        confidence: 0,
+        prior: 0,
+        explained_share: 0,
+        recovered_pts: 0,
+        verdict: "UNKNOWN",
+        evidence: [],
+      };
+
+      const rootCause = ranked.find(r => r?.verdict === "ROOT_CAUSE") || ranked[0] || defaultHyp;
+      const redHerring = ranked.find(r => r?.verdict === "SUPPRESSED_NOISE") || ranked[ranked.length - 1] || defaultHyp;
 
       // Node coordinates for SVG Causal Graph
       const sourceY = {
@@ -187,13 +281,14 @@
         operational: "#14b8a6" // Teal
       };
 
+      const traceTotal = Math.max(1, Array.isArray(result?.trace) ? result.trace.length : 1);
       const visibleNodeCount = phase === "streaming_trace"
-        ? Math.max(3, Math.min(graph.nodes.length, Math.floor((streamedSteps.length / (result.trace.length || 1)) * graph.nodes.length)))
-        : graph.nodes.length;
+        ? Math.max(3, Math.min(graphNodes.length, Math.floor((streamedSteps.length / traceTotal) * graphNodes.length)))
+        : graphNodes.length;
 
-      const activeNodes = graph.nodes.slice(0, visibleNodeCount);
-      const activeNodeIds = new Set(activeNodes.map(n => n.id));
-      const activeEdges = graph.edges.filter(e => activeNodeIds.has(e.src) && activeNodeIds.has(e.dst));
+      const activeNodes = graphNodes.slice(0, visibleNodeCount);
+      const activeNodeIds = new Set(activeNodes.map(n => n?.id).filter(Boolean));
+      const activeEdges = graphEdges.filter(e => e?.src && e?.dst && activeNodeIds.has(e.src) && activeNodeIds.has(e.dst));
 
       return (
         <div className="max-w-[1720px] mx-auto p-4 md:p-6 space-y-6">
@@ -223,8 +318,9 @@
                 <span className="text-slate-400 font-medium">Scenario:</span>
                 <select
                   value={scenario}
+                  disabled={isBusy}
                   onChange={(e) => setScenario(e.target.value)}
-                  className="bg-transparent text-slate-200 font-semibold focus:outline-none cursor-pointer"
+                  className={`bg-transparent text-slate-200 font-semibold focus:outline-none ${isBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <option value="festival_deadlock" className="bg-slate-900">festival_deadlock (DB-Lock Issue)</option>
                   <option value="gateway_outage" className="bg-slate-900">gateway_outage (Gateway Crash)</option>
@@ -235,8 +331,9 @@
                 <span className="text-slate-400 font-medium">Backend:</span>
                 <select
                   value={backend}
+                  disabled={isBusy}
                   onChange={(e) => setBackend(e.target.value)}
-                  className="bg-transparent text-slate-200 font-semibold focus:outline-none cursor-pointer"
+                  className={`bg-transparent text-slate-200 font-semibold focus:outline-none ${isBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <option value="csv" className="bg-slate-900">CSV Micro-batch</option>
                   <option value="duckdb" className="bg-slate-900">DuckDB Pushdown</option>
@@ -246,13 +343,22 @@
               <button
                 id="inject-btn"
                 onClick={() => handleInject(true)}
-                disabled={loading}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs rounded-lg transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+                disabled={isBusy}
+                className={`px-4 py-2 font-bold text-xs rounded-lg transition-all flex items-center gap-2 ${
+                  isBusy
+                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                    : 'bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white shadow-lg shadow-indigo-600/30'
+                }`}
               >
                 {loading ? (
                   <>
                     <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                     Investigating...
+                  </>
+                ) : isBusy ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></span>
+                    Tracing Incident...
                   </>
                 ) : (
                   <>
@@ -288,14 +394,14 @@
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded bg-red-600 text-white">
-                        NAIVE MONITORING ALERT — {naive_alert.severity}
+                        NAIVE MONITORING ALERT — {naive_alert?.severity || "CRITICAL"}
                       </span>
                       <span className="text-xs text-red-300 mono font-semibold">
-                        Breach Onset: {naive_alert.onset} IST
+                        Breach Onset: {naive_alert?.onset || "Unknown"} IST
                       </span>
                     </div>
                     <h2 className="text-2xl font-extrabold text-white mt-1">
-                      {naive_alert.label} detected (+{naive_alert.sigma}σ anomaly)
+                      {naive_alert?.label} detected (+{naive_alert?.sigma}σ anomaly)
                     </h2>
                     <p className="text-xs text-red-200/90 mt-0.5">
                       Standard threshold rule fired on symptom telemetry. Engaging Clarion Causal Graph Engine...
@@ -304,7 +410,7 @@
                 </div>
                 <div className="text-right">
                   <span className="text-xs text-red-300 block">Symptom Deviation</span>
-                  <span className="text-4xl font-black text-red-400 mono">+{naive_alert.sigma}σ</span>
+                  <span className="text-4xl font-black text-red-400 mono">+{naive_alert?.sigma}σ</span>
                 </div>
               </div>
             </div>
@@ -329,7 +435,7 @@
               <div>
                 <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Completion Rate Drop</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-black text-rose-400 mono">-{anomaly.drop_pct}%</span>
+                  <span className="text-3xl font-black text-rose-400 mono">-{anomaly?.drop_pct}%</span>
                   <span className="text-xs text-slate-400">during incident window</span>
                 </div>
               </div>
@@ -338,21 +444,21 @@
                 <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">KPI Baseline → Incident</span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-xl font-bold text-slate-300 mono">
-                    {(anomaly.baseline * 100).toFixed(1)}% → {(anomaly.incident * 100).toFixed(1)}%
+                    {((anomaly?.baseline ?? 0) * 100).toFixed(1)}% → {((anomaly?.incident ?? 0) * 100).toFixed(1)}%
                   </span>
                 </div>
                 <span className="text-xs text-slate-400 block mt-0.5">
-                  Eval Window: {anomaly.window.incident} IST
+                  Eval Window: {anomaly?.window?.incident || "19:00-21:00"} IST
                 </span>
               </div>
 
               <div className="border-l border-slate-800 pl-4">
                 <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Anomaly Onset</span>
                 <div className="text-lg font-bold text-amber-300 mono mt-1">
-                  {anomaly.onset} IST
+                  {anomaly?.onset} IST
                 </div>
                 <span className="text-xs text-slate-400 block mt-0.5">
-                  Baseline window: {anomaly.window.baseline}
+                  Baseline window: {anomaly?.window?.baseline || "18:30-18:44"}
                 </span>
               </div>
             </div>
@@ -368,18 +474,18 @@
                     Symptom / Red Herring Signal
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
-                    {redHerring.verdict}
+                    {redHerring?.verdict || "SUPPRESSED_NOISE"}
                   </span>
                 </div>
 
                 <div className="flex items-baseline justify-between mb-4">
                   <h3 className="text-2xl font-black text-slate-200">
-                    {redHerring.name}
+                    {redHerring?.name || "Red Herring"}
                   </h3>
                   <div className="text-right">
                     <span className="text-xs text-slate-400 block">Posterior Confidence</span>
                     <span className="text-3xl font-black text-slate-400 mono">
-                      {(redHerring.confidence * 100).toFixed(1)}%
+                      {((redHerring?.confidence ?? 0) * 100).toFixed(1)}%
                     </span>
                   </div>
                 </div>
@@ -388,14 +494,14 @@
                 <div className="bg-slate-950/70 border border-slate-800 rounded-lg p-3.5 mb-4 text-xs space-y-1.5">
                   <div className="flex justify-between items-center text-slate-300 font-semibold">
                     <span>Counterfactual Cancellation Share:</span>
-                    <span className="mono text-indigo-300 font-bold">{(redHerring.explained_share * 100).toFixed(1)}%</span>
+                    <span className="mono text-indigo-300 font-bold">{((redHerring?.explained_share ?? 0) * 100).toFixed(1)}%</span>
                   </div>
                   <div className="flex justify-between items-center text-slate-300 font-semibold">
                     <span>Recovered Impact Points:</span>
-                    <span className="mono text-indigo-300 font-bold">{redHerring.recovered_pts.toFixed(2)} pts</span>
+                    <span className="mono text-indigo-300 font-bold">{(redHerring?.recovered_pts ?? 0).toFixed(2)} pts</span>
                   </div>
                   <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
-                    {redHerring.id === "H1"
+                    {redHerring?.id === "H1"
                       ? "Suppression verified: 502 errors occurred downstream of client timeouts with 98.6% banking capture success."
                       : "Suppression verified: signal share is statistically negligible compared to primary driver."}
                   </p>
@@ -406,14 +512,14 @@
                   <span className="text-xs uppercase font-semibold tracking-wider text-slate-400 block">
                     Evidence Verification Trail
                   </span>
-                  {redHerring.evidence.map(ev => (
-                    <div key={ev.id} className="bg-slate-950/50 border border-slate-800/60 rounded p-2.5 flex items-center justify-between text-xs gap-3">
+                  {(redHerring?.evidence || []).map(ev => (
+                    <div key={ev?.id || Math.random()} className="bg-slate-950/50 border border-slate-800/60 rounded p-2.5 flex items-center justify-between text-xs gap-3">
                       <div>
-                        <span className="font-mono text-[10px] text-slate-400 mr-2">{ev.id}</span>
-                        <span className="text-slate-300">{ev.text}</span>
+                        <span className="font-mono text-[10px] text-slate-400 mr-2">{ev?.id}</span>
+                        <span className="text-slate-300">{ev?.text}</span>
                       </div>
-                      <span className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] whitespace-nowrap ${ev.lr < 1.0 ? 'bg-rose-950 text-rose-300 border border-rose-900' : 'bg-slate-800 text-slate-300'}`}>
-                        LR {ev.lr.toFixed(3)}
+                      <span className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] whitespace-nowrap ${(ev?.lr ?? 1) < 1.0 ? 'bg-rose-950 text-rose-300 border border-rose-900' : 'bg-slate-800 text-slate-300'}`}>
+                        LR {(ev?.lr ?? 1).toFixed(3)}
                       </span>
                     </div>
                   ))}
@@ -430,18 +536,18 @@
                     Identified Root Cause
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-900/80 text-emerald-300 border border-emerald-600">
-                    {rootCause.verdict}
+                    {rootCause?.verdict || "ROOT_CAUSE"}
                   </span>
                 </div>
 
                 <div className="flex items-baseline justify-between mb-4">
                   <h3 className="text-2xl font-black text-white">
-                    {rootCause.name}
+                    {rootCause?.name || "Root Cause"}
                   </h3>
                   <div className="text-right">
                     <span className="text-xs text-indigo-200 block">Posterior Confidence</span>
                     <span className="text-4xl font-black text-emerald-400 mono">
-                      {(rootCause.confidence * 100).toFixed(1)}%
+                      {((rootCause?.confidence ?? 0) * 100).toFixed(1)}%
                     </span>
                   </div>
                 </div>
@@ -450,14 +556,14 @@
                 <div className="bg-slate-950/80 border border-indigo-900/60 rounded-lg p-3.5 mb-4 text-xs space-y-1.5">
                   <div className="flex justify-between items-center text-slate-200 font-semibold">
                     <span>Counterfactual Failure Share:</span>
-                    <span className="mono text-emerald-400 font-bold">{(rootCause.explained_share * 100).toFixed(1)}%</span>
+                    <span className="mono text-emerald-400 font-bold">{((rootCause?.explained_share ?? 0) * 100).toFixed(1)}%</span>
                   </div>
                   <div className="flex justify-between items-center text-slate-200 font-semibold">
                     <span>Recovered Drop Points:</span>
-                    <span className="mono text-emerald-400 font-bold">{rootCause.recovered_pts.toFixed(2)} pts</span>
+                    <span className="mono text-emerald-400 font-bold">{(rootCause?.recovered_pts ?? 0).toFixed(2)} pts</span>
                   </div>
                   <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-800">
-                    Counterfactual simulation confirms that mitigating this cause recovers {rootCause.recovered_pts.toFixed(1)} percentage points of completion rate drop.
+                    Counterfactual simulation confirms that mitigating this cause recovers {(rootCause?.recovered_pts ?? 0).toFixed(1)} percentage points of completion rate drop.
                   </p>
                 </div>
 
@@ -466,14 +572,14 @@
                   <span className="text-xs uppercase font-semibold tracking-wider text-indigo-300 block">
                     Evidence Verification Trail
                   </span>
-                  {rootCause.evidence.map(ev => (
-                    <div key={ev.id} className="bg-slate-950/60 border border-slate-800 rounded p-2.5 flex items-center justify-between text-xs gap-3">
+                  {(rootCause?.evidence || []).map(ev => (
+                    <div key={ev?.id || Math.random()} className="bg-slate-950/60 border border-slate-800 rounded p-2.5 flex items-center justify-between text-xs gap-3">
                       <div>
-                        <span className="font-mono text-[10px] text-indigo-400 mr-2">{ev.id}</span>
-                        <span className="text-slate-200">{ev.text}</span>
+                        <span className="font-mono text-[10px] text-indigo-400 mr-2">{ev?.id}</span>
+                        <span className="text-slate-200">{ev?.text}</span>
                       </div>
-                      <span className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] whitespace-nowrap ${ev.lr >= 1.5 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-800 text-slate-300'}`}>
-                        LR {ev.lr.toFixed(3)}
+                      <span className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] whitespace-nowrap ${(ev?.lr ?? 1) >= 1.5 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-800 text-slate-300'}`}>
+                        LR {(ev?.lr ?? 1).toFixed(3)}
                       </span>
                     </div>
                   ))}
@@ -542,8 +648,8 @@
 
                 {/* Edges */}
                 {activeEdges.map((edge, idx) => {
-                  const srcNode = activeNodes.find(n => n.id === edge.src);
-                  const dstNode = activeNodes.find(n => n.id === edge.dst);
+                  const srcNode = activeNodes.find(n => n?.id === edge.src);
+                  const dstNode = activeNodes.find(n => n?.id === edge.dst);
                   if (!srcNode || !dstNode) return null;
 
                   const srcX = getNodeX(srcNode.id);
@@ -572,6 +678,7 @@
 
                 {/* Nodes */}
                 {activeNodes.map((node) => {
+                  if (!node) return null;
                   const x = getNodeX(node.id);
                   const y = sourceY[node.source] || 200;
                   const color = roleColors[node.role] || "#94a3b8";
@@ -612,7 +719,7 @@
                         textAnchor="middle"
                         className="select-none pointer-events-none"
                       >
-                        {truncateText(node.label, 26)}
+                        {truncateText(node.label || "", 26)}
                       </text>
                     </g>
                   );
@@ -624,15 +731,15 @@
                 <div className="mt-3 p-4 bg-slate-950 border border-slate-700 rounded-lg text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-white text-sm">{selectedNode.label}</span>
+                      <span className="font-bold text-white text-sm">{selectedNode?.label}</span>
                       <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold mono bg-slate-800 text-slate-300">
-                        Role: {selectedNode.role}
+                        Role: {selectedNode?.role}
                       </span>
-                      <span className="text-slate-400 mono">Source: {selectedNode.source}</span>
+                      <span className="text-slate-400 mono">Source: {selectedNode?.source}</span>
                     </div>
-                    <p className="text-slate-300">{selectedNode.detail}</p>
+                    <p className="text-slate-300">{selectedNode?.detail}</p>
                     <span className="text-[11px] text-slate-400 mono block mt-0.5">
-                      Entity: {selectedNode.entity} | Recorded: {selectedNode.ts}
+                      Entity: {selectedNode?.entity} | Recorded: {selectedNode?.ts}
                     </span>
                   </div>
                   <button
@@ -647,7 +754,7 @@
           </section>
 
           {/* Lower Grid: Agent Trace Terminal, Ranked Causes, Remediation, Velocity Index */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div ref={lowerSectionRef} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Agent Trace Terminal (Left 7 Cols) */}
             <div className="lg:col-span-7 bg-[#060a12] border border-slate-800 rounded-xl p-5 flex flex-col h-[520px]">
               <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
@@ -656,7 +763,7 @@
                   <span className="w-3 h-3 rounded-full bg-amber-500"></span>
                   <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
                   <span className="text-xs font-bold text-slate-300 mono ml-2">
-                    Agentic Reasoning Execution Trace ({streamedSteps.length}/{result.trace.length} checks)
+                    Agentic Reasoning Execution Trace ({streamedSteps.length}/{Array.isArray(result?.trace) ? result.trace.length : 0} checks)
                   </span>
                 </div>
                 <span className="text-[11px] text-slate-400 mono">
@@ -664,27 +771,28 @@
                 </span>
               </div>
 
-              <div className="flex-1 overflow-y-auto space-y-2 mono text-xs pr-1">
-                {streamedSteps.map((step) => {
-                  const hypColor = step.hypothesis === "H3" ? "text-emerald-400" : step.hypothesis === "H2" ? "text-cyan-400" : "text-amber-400";
+              <div ref={terminalContainerRef} className="flex-1 overflow-y-auto space-y-2 mono text-xs pr-1">
+                {streamedSteps.filter(Boolean).map((step, idx) => {
+                  const stepNum = step?.step ?? (idx + 1);
+                  const stepHyp = step?.hypothesis ?? "H3";
+                  const hypColor = stepHyp === "H3" ? "text-emerald-400" : stepHyp === "H2" ? "text-cyan-400" : "text-amber-400";
                   return (
-                    <div key={step.step} className="p-2 rounded bg-slate-950/70 border border-slate-900 leading-relaxed">
+                    <div key={stepNum} className="p-2 rounded bg-slate-950/70 border border-slate-900 leading-relaxed">
                       <div className="flex items-center justify-between text-[11px] mb-1">
                         <span className="text-slate-400">
-                          Step [{step.step.toString().padStart(2, "0")}] → <span className={`font-bold ${hypColor}`}>{step.hypothesis}</span>
+                          Step [{stepNum.toString().padStart(2, "0")}] → <span className={`font-bold ${hypColor}`}>{stepHyp}</span>
                         </span>
-                        <span className="text-indigo-400 font-semibold">{step.tool}()</span>
+                        <span className="text-indigo-400 font-semibold">{step?.tool || "tool"}()</span>
                       </div>
                       <div className="text-slate-400 text-[11px]">
-                        query: <span className="text-slate-300">{JSON.stringify(step.query)}</span>
+                        query: <span className="text-slate-300">{JSON.stringify(step?.query || {})}</span>
                       </div>
                       <div className="text-slate-200 mt-1 pl-2 border-l-2 border-slate-700">
-                        {step.result}
+                        {step?.result || ""}
                       </div>
                     </div>
                   );
                 })}
-                <div ref={traceEndRef} />
               </div>
             </div>
 
@@ -697,9 +805,9 @@
                 </h4>
                 <div className="space-y-3">
                   {ranked.map((item, idx) => {
-                    const isTop = idx === 0;
+                    if (!item) return null;
                     return (
-                      <div key={item.id} className="p-3 bg-slate-950/80 border border-slate-800/80 rounded-lg">
+                      <div key={item.id || idx} className="p-3 bg-slate-950/80 border border-slate-800/80 rounded-lg">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-white text-xs">#{idx + 1} {item.name}</span>
@@ -722,12 +830,12 @@
                               item.verdict === 'ROOT_CAUSE' ? 'bg-emerald-500' :
                               item.verdict === 'SUPPRESSED_NOISE' ? 'bg-slate-600' : 'bg-indigo-500'
                             }`}
-                            style={{ width: `${Math.round(item.confidence * 100)}%` }}
+                            style={{ width: `${Math.round((item.confidence ?? 0) * 100)}%` }}
                           ></div>
                         </div>
                         <div className="flex justify-between items-center text-[11px] text-slate-400 mono">
-                          <span>Prior: {(item.prior * 100).toFixed(0)}%</span>
-                          <span className="font-bold text-white">Posterior: {(item.confidence * 100).toFixed(1)}%</span>
+                          <span>Prior: {((item.prior ?? 0) * 100).toFixed(0)}%</span>
+                          <span className="font-bold text-white">Posterior: {((item.confidence ?? 0) * 100).toFixed(1)}%</span>
                         </div>
                       </div>
                     );
@@ -744,19 +852,22 @@
                   </span>
                 </h4>
                 <div className="space-y-2 mt-3">
-                  {remediation.map((rem) => (
-                    <div key={rem.priority} className="p-2.5 bg-slate-950/60 border border-slate-800 rounded text-xs space-y-1">
-                      <div className="font-semibold text-slate-200">
-                        {rem.priority}. {rem.action}
+                  {remediation.map((rem, idx) => {
+                    if (!rem) return null;
+                    return (
+                      <div key={rem.priority || idx} className="p-2.5 bg-slate-950/60 border border-slate-800 rounded text-xs space-y-1">
+                        <div className="font-semibold text-slate-200">
+                          {rem.priority}. {rem.action}
+                        </div>
+                        <div className="mono text-[11px] text-indigo-300">
+                          Target: {rem.target}
+                        </div>
+                        <div className="text-[10px] text-slate-400 italic">
+                          {rem.advisory}
+                        </div>
                       </div>
-                      <div className="mono text-[11px] text-indigo-300">
-                        Target: {rem.target}
-                      </div>
-                      <div className="text-[10px] text-slate-400 italic">
-                        {rem.advisory}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -769,16 +880,16 @@
                   <div>
                     <span className="text-[11px] text-slate-400 block">Manual MTTR</span>
                     <span className="text-2xl font-black text-slate-300 mono">4.5 h</span>
-                    <span className="text-[10px] text-slate-400 block">({roi.manual_s}s benchmark)</span>
+                    <span className="text-[10px] text-slate-400 block">({roi?.manual_s || 16200}s benchmark)</span>
                   </div>
                   <div>
                     <span className="text-[11px] text-slate-400 block">Clarion E2E</span>
                     <span className="text-2xl font-black text-emerald-400 mono">90 s</span>
-                    <span className="text-[10px] text-slate-400 block">({roi.reduction_pct}% MTTR reduction)</span>
+                    <span className="text-[10px] text-slate-400 block">({roi?.reduction_pct || 99.44}% MTTR reduction)</span>
                   </div>
                 </div>
                 <div className="text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
-                  both MTTR figures are assumptions from config.json; measured compute time: <span className="text-white font-bold mono">{roi.compute_ms} ms</span>
+                  both MTTR figures are assumptions from config.json; measured compute time: <span className="text-white font-bold mono">{roi?.compute_ms || 0} ms</span>
                 </div>
               </div>
 
@@ -790,11 +901,11 @@
                       Monte Carlo Ranking Stability
                     </span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-                      {(robustness.share_top_cause_holds * 100).toFixed(1)}% Stable
+                      {((robustness.share_top_cause_holds ?? 0) * 100).toFixed(1)}% Stable
                     </span>
                   </div>
                   <p className="text-slate-400 text-[11px]">
-                    Top root cause held in <strong className="text-white mono">{(robustness.share_top_cause_holds * 100).toFixed(1)}%</strong> of {robustness.n_runs.toLocaleString()} runs under uniform ±30% prior &amp; likelihood ratio perturbations (acceptance threshold: ≥ 95%).
+                    Top root cause held in <strong className="text-white mono">{((robustness.share_top_cause_holds ?? 0) * 100).toFixed(1)}%</strong> of {(robustness.n_runs || 5000).toLocaleString()} runs under uniform ±30% prior &amp; likelihood ratio perturbations (acceptance threshold: ≥ 95%).
                   </p>
                 </div>
               )}
