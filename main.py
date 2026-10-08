@@ -336,7 +336,7 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
                         parser_succeeded = True
                         break
                     except TypeError:
-                        parsed_data = parse_fn(content_bytes.decode("utf-8", errors="replace"))
+                        parsed_data = parse_fn(content_bytes.decode("utf-8-sig", errors="replace"))
                         parser_succeeded = True
                         break
                 except Exception:
@@ -346,7 +346,7 @@ async def post_upload_telemetry(file: UploadFile = File(...)) -> dict[str, Any]:
 
     # Safe fallback if SU's parser is missing or fails
     if not parser_succeeded or parsed_data is None:
-        text_content = content_bytes.decode("utf-8", errors="replace")
+        text_content = content_bytes.decode("utf-8-sig", errors="replace")
         if lower_name.endswith(".json"):
             try:
                 parsed_data = json.loads(text_content)
