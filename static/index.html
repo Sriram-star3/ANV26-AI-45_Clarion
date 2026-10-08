@@ -991,3 +991,121 @@
   </script>
 </body>
 </html>
+
+
+<!-- Clarion Package 3 Integration Bar -->
+<div style="background: rgba(15, 23, 42, 0.85); border: 1px solid #334155; padding: 14px 20px; border-radius: 8px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <span style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">DuckDB Ingest:</span>
+    <input type="file" id="telemetryFile" accept=".csv,.json" style="font-size: 12px; color: #cbd5e0; max-width: 180px;">
+    <button onclick="handleFileUpload()" style="background: #2563eb; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px;">Run Ingest</button>
+    <span id="uploadStatus" style="font-size: 12px;"></span>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <span style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">Human Approval:</span>
+    <button onclick="recordDecision('CONFIRMED')" style="background: #16a34a; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px;">Confirm Verdict</button>
+    <button onclick="recordDecision('REJECTED')" style="background: #dc2626; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px;">Reject Verdict</button>
+    <span id="feedbackNotice" style="font-size: 12px;"></span>
+  </div>
+</div>
+
+<script>
+async function loadScenario(scenarioId) {
+  if (scenarioId === "festival_deadlock") {
+    window.location.reload();
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/scenario/${scenarioId}`);
+    if (!res.ok) throw new Error("Could not load scenario");
+    const data = await res.json();
+
+    const rootCauseTitle = document.querySelector(".ROOT_CAUSE, [class*='root-cause']") || document.querySelectorAll("h3")[1];
+    if (rootCauseTitle) rootCauseTitle.innerText = data.title || "Redis Cache Eviction Surge";
+
+    const traceContainer = document.querySelector(".trace-list, [class*='reasoning']") || document.getElementById("traceContainer");
+    if (traceContainer && data.telemetry) {
+      traceContainer.innerHTML = data.telemetry.map((t, idx) => `
+        <div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 12px;">
+          <span style="color: #38bdf8;">Step [0${idx+1}]</span> - 
+          <b>${t.metric_name}</b>: <span style="color: #f87171;">${t.value}</span> (${t.event_type}) 
+          <span style="color: #64748b; font-size: 10px;">@ ${t.timestamp}</span>
+        </div>
+      `).join("");
+    }
+
+    const auditContainer = document.getElementById("auditTrail") || document.querySelector(".audit-logs");
+    if (auditContainer && data.audit_logs) {
+      auditContainer.innerHTML = data.audit_logs.map(log => `
+        <div style="font-size: 11px; margin: 4px 0; color: ${log.level === 'CRITICAL' ? '#ef4444' : '#f59e0b'};">
+          [${log.level}] <b>${log.service}</b>: ${log.message}
+        </div>
+      `).join("");
+    }
+  } catch (err) {
+    console.error("Scenario load error:", err);
+  }
+}
+
+async function handleFileUpload() {
+  const fileInput = document.getElementById('telemetryFile');
+  const status = document.getElementById('uploadStatus');
+  if (!fileInput.files.length) {
+    status.style.color = "#f87171";
+    status.innerText = "Select a file first";
+    return;
+  }
+  const form = new FormData();
+  form.append('file', fileInput.files[0]);
+  status.style.color = "#38bdf8";
+  status.innerText = "Ingesting into DuckDB...";
+
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: form });
+    const result = await res.json();
+    if (res.ok) {
+      status.style.color = "#4ade80";
+      status.innerText = `Ingested ${result.rows_ingested} records into memory!`;
+    } else {
+      status.style.color = "#f87171";
+      status.innerText = result.detail || "Upload error";
+    }
+  } catch (e) {
+    status.style.color = "#f87171";
+    status.innerText = e.message;
+  }
+}
+
+async function recordDecision(decision) {
+  const notice = document.getElementById('feedbackNotice');
+  notice.style.color = "#38bdf8";
+  notice.innerText = "Writing to fallback store...";
+
+  const scenarioDropdown = document.getElementById('scenarioSelect');
+  const activeScenario = scenarioDropdown ? scenarioDropdown.value : "scenario_3";
+  try {
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        item_id: activeScenario,
+        decision: decision,
+        notes: "Decision recorded via local dashboard interface"
+      })
+    });
+    const result = await res.json();
+    if (res.ok) {
+      notice.style.color = "#4ade80";
+      notice.innerText = `Recorded (${decision}) in feedback.json`;
+    } else {
+      notice.style.color = "#f87171";
+      notice.innerText = result.detail || "Error saving";
+    }
+  } catch (e) {
+    notice.style.color = "#f87171";
+    notice.innerText = e.message;
+  }
+}
+</script>
