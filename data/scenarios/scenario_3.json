@@ -1,0 +1,74 @@
+{
+  "scenario_id": "scenario_3",
+  "title": "Redis Cache Eviction Surge causing Darkstore Inventory Stockouts",
+  "description": "High memory pressure on primary Redis cluster causes rapid key eviction, stale cache reads, overselling, and inventory reconciliation lockouts across darkstores.",
+  "metadata": {
+    "severity": "CRITICAL",
+    "affected_services": ["redis-cache-cluster", "inventory-service", "order-dispatch"],
+    "time_window": "2026-10-08T14:00:00Z to 2026-10-08T15:30:00Z"
+  },
+  "telemetry": [
+    {
+      "timestamp": "2026-10-08T14:05:00Z",
+      "metric_name": "redis_memory_usage_ratio",
+      "value": 0.96,
+      "event_type": "threshold_breach"
+    },
+    {
+      "timestamp": "2026-10-08T14:10:00Z",
+      "metric_name": "evicted_keys_per_second",
+      "value": 14200.0,
+      "event_type": "spike"
+    },
+    {
+      "timestamp": "2026-10-08T14:15:00Z",
+      "metric_name": "inventory_db_connection_pool_saturation",
+      "value": 99.4,
+      "event_type": "exhaustion"
+    },
+    {
+      "timestamp": "2026-10-08T14:20:00Z",
+      "metric_name": "darkstore_stockout_order_reject_rate",
+      "value": 38.7,
+      "event_type": "incident_impact"
+    }
+  ],
+  "audit_logs": [
+    {
+      "timestamp": "2026-10-08T14:02:11Z",
+      "service": "cache-manager",
+      "level": "WARN",
+      "message": "Memory limit reached on redis-node-03; maxmemory-policy volatile-lru active."
+    },
+    {
+      "timestamp": "2026-10-08T14:08:45Z",
+      "service": "inventory-sync",
+      "level": "ERROR",
+      "message": "Cache miss storm on key 'store_084:item_catalog'; falling back to direct Postgres read replica."
+    },
+    {
+      "timestamp": "2026-10-08T14:18:22Z",
+      "service": "dispatch-router",
+      "level": "CRITICAL",
+      "message": "Stock reconciliation failure for Darkstore DS-BLR-04: reserved items unavailable on physical shelf."
+    }
+  ],
+  "ledger_transactions": [
+    {
+      "transaction_id": "TXN-90214",
+      "timestamp": "2026-10-08T14:12:05Z",
+      "sku": "SKU-MILK-1L",
+      "store_id": "DS-BLR-04",
+      "status": "FAILED_OUT_OF_STOCK",
+      "refund_amount": 4.50
+    },
+    {
+      "transaction_id": "TXN-90215",
+      "timestamp": "2026-10-08T14:14:30Z",
+      "sku": "SKU-BREAD-WHEAT",
+      "store_id": "DS-BLR-04",
+      "status": "FAILED_OUT_OF_STOCK",
+      "refund_amount": 2.20
+    }
+  ]
+}
