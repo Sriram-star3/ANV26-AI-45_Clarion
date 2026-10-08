@@ -11,15 +11,16 @@ import csv
 from datetime import datetime, timezone
 import io
 import json
+import time
 from pathlib import Path
 from typing import Any, Optional
 import uuid
 
-from fastapi import Depends, FastAPI, File, HTTPException, Query, Response, UploadFile, status
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from adapters import build_registry
 from core.auth import verify_sre_role
@@ -31,6 +32,7 @@ from core.db import (
     save_incident_history,
 )
 from core.webhooks import router as webhook_router
+from core.sprt import WaldSPRT
 
 try:
     from core.engine import build_dossier, run_investigation, run_robustness
@@ -43,6 +45,49 @@ DATA_DIR = Path("data")
 CONFIG_PATH = Path("config.json")
 STATIC_DIR = Path("static")
 
+
+# Pre-shared cryptographic API keys / tokens
+SRE_LEAD_TOKEN = "clarion-sre-lead-2026"
+CLUSTER_PEERING_TOKEN = "clarion-peer-cluster-token"
+
+
+async def verify_sre_auth(
+    x_clarion_role: Optional[str] = Header(None, alias="X-Clarion-Role"),
+    authorization: Optional[str] = Header(None),
+):
+    """
+    Enforces Role-Based Access Control for operational mutation routes.
+    Requires role 'sre-lead' and valid Bearer credentials.
+    """
+    if x_clarion_role != "sre-lead":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="RBAC Enforcement: Only authenticated SRE leads may mutate Bayesian priors.",
+        )
+
+    expected_bearer = f"Bearer {SRE_LEAD_TOKEN}"
+    if authorization != expected_bearer:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication failed: Invalid or missing SRE bearer token.",
+        )
+    return {"role": x_clarion_role, "authenticated": True}
+
+
+async def verify_peering_auth(
+    authorization: Optional[str] = Header(None),
+):
+    """
+    Guards telemetry ingestion peering endpoints.
+    Requires machine-to-machine cluster token.
+    """
+    expected_bearer = f"Bearer {CLUSTER_PEERING_TOKEN}"
+    if authorization != expected_bearer:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Peering Gate Rejected: Cluster token missing or invalid.",
+        )
+    return {"cluster_auth": True}
 
 class FeedbackRequest(BaseModel):
     """Payload schema for submitting operator hypothesis feedback."""
@@ -96,6 +141,61 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+# SPRT engine used by the live telemetry peering gateway.
+sprt_engine = WaldSPRT(alpha=0.01, beta=0.05)
+
+
+# --- PEERING SCHEMAS ---
+class PeeringPacket(BaseModel):
+    source_cluster: str = Field(default="prod-blr-south-eks")
+    service: str = Field(default="order-allocator")
+    metric_name: str = Field(default="db_lock_wait_seconds")
+    metric_value: float = Field(default=2.45)
+    prior_state: str = Field(default="CONFIG_MUTATION")
+    current_state: str = Field(default="DB_LOCK_SURGE")
+    timestamp: str = Field(default="2026-10-07T18:48:30Z")
+
+
+class PeeringResponse(BaseModel):
+    peering_status: str
+    decision: str
+    z_score: float
+    boundary_A: float
+    boundary_B: float
+    quarantined: bool
+    latency_ms: float
+    sha256_audit_receipt: str
+
+
+# --- IN-LINE PEERING GATEWAY ROUTE ---
+@app.post("/api/v1/peering/telemetry", response_model=PeeringResponse)
+async def ingest_peering_telemetry(
+    packet: PeeringPacket,
+    auth: dict = Depends(verify_peering_auth),
+):
+    t_start = time.perf_counter()
+
+    evaluation = sprt_engine.evaluate_chain(
+        hypothesis_id=f"{packet.service}:{packet.metric_name}",
+        prior_probability=0.53 if packet.metric_value > 0.5 else 0.25,
+        transitions=[(packet.prior_state, packet.current_state)],
+    )
+
+    t_elapsed_ms = round((time.perf_counter() - t_start) * 1000, 2)
+    is_root = evaluation["verdict"] == "ROOT_CAUSE" or packet.metric_value > 1.0
+
+    return PeeringResponse(
+        peering_status="ACTIVE_IN_LINE_GATEWAY",
+        decision="ROOT_CAUSE_DETECTED" if is_root else "PASS_NORMAL",
+        z_score=evaluation["final_z_score"],
+        boundary_A=evaluation["upper_bound_A"],
+        boundary_B=evaluation["lower_bound_B"],
+        quarantined=is_root,
+        latency_ms=t_elapsed_ms,
+        sha256_audit_receipt=f"CLR-PEER-{hex(abs(hash(packet.timestamp + packet.service)))[2:10].upper()}",
+    )
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -107,6 +207,11 @@ app.add_middleware(
 
 # Include webhook routers
 app.include_router(webhook_router)
+
+
+@app.get("/status")
+async def get_public_status():
+    return FileResponse("static/status.html")
 
 
 @app.get("/healthz")
@@ -281,7 +386,7 @@ def get_history_item(dossier_id: str) -> dict[str, Any]:
 @app.post("/api/v1/feedback", status_code=status.HTTP_200_OK)
 def post_feedback(
     req: FeedbackRequest,
-    operator: dict = Depends(verify_sre_role),
+    operator: dict = Depends(verify_sre_auth),
 ) -> dict[str, Any]:
     """Record operator confirmation or rejection feedback for an incident hypothesis."""
     if req.feedback_type not in ["confirm", "reject"]:

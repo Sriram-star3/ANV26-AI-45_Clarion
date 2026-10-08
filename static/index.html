@@ -18,29 +18,49 @@
       background-attachment: fixed !important;
     }
 
-    /* Ambient Dynamic Mesh Gradients */
+    /* Ambient Diminishing Mesh Gradients */
     body.theme-dark {
       background:
-        radial-gradient(circle at 8% 12%, rgba(99, 102, 241, 0.22) 0%, transparent 45%),
-        radial-gradient(circle at 92% 18%, rgba(6, 182, 212, 0.18) 0%, transparent 40%),
-        radial-gradient(circle at 85% 88%, rgba(16, 185, 129, 0.20) 0%, transparent 48%),
-        radial-gradient(circle at 15% 85%, rgba(168, 85, 247, 0.16) 0%, transparent 45%),
-        linear-gradient(135deg, #070914 0%, #0d1226 30%, #08121f 65%, #040e16 100%);
+        radial-gradient(circle at 10% 8%, rgba(99, 102, 241, 0.25) 0%, transparent 45%),
+        radial-gradient(circle at 90% 12%, rgba(6, 182, 212, 0.22) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.20) 0%, transparent 48%),
+        radial-gradient(circle at 12% 88%, rgba(168, 85, 247, 0.18) 0%, transparent 45%),
+        linear-gradient(135deg, #060814 0%, #0c1126 30%, #071220 65%, #030b14 100%);
       color: #f1f5f9;
     }
 
     body.theme-light {
       background:
-        radial-gradient(circle at 10% 12%, rgba(129, 140, 248, 0.25) 0%, transparent 50%),
-        radial-gradient(circle at 90% 15%, rgba(56, 189, 248, 0.22) 0%, transparent 45%),
-        radial-gradient(circle at 85% 85%, rgba(52, 211, 153, 0.22) 0%, transparent 50%),
-        radial-gradient(circle at 15% 85%, rgba(232, 121, 249, 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 10% 8%, rgba(129, 140, 248, 0.30) 0%, transparent 50%),
+        radial-gradient(circle at 90% 12%, rgba(56, 189, 248, 0.26) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(52, 211, 153, 0.26) 0%, transparent 50%),
+        radial-gradient(circle at 12% 88%, rgba(232, 121, 249, 0.20) 0%, transparent 45%),
         linear-gradient(135deg, #eef2ff 0%, #f1f5f9 35%, #e0f2fe 70%, #ecfdf5 100%);
       color: #0f172a;
     }
 
     .mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .glass-card {
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      box-shadow: 0 12px 36px -8px rgba(6, 182, 212, 0.18);
+      transform: translateY(-2px);
+    }
+
+    .floating-pill {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .floating-pill:hover {
+      transform: translateY(-1.5px);
+      box-shadow: 0 6px 20px -4px rgba(99, 102, 241, 0.35);
     }
 
     @keyframes flowPulse {
@@ -56,11 +76,6 @@
     .animate-causal-flow {
       stroke-dasharray: 7, 7;
       animation: flowPulse 1.2s linear infinite;
-    }
-
-    .frosted-glass {
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
     }
 
     @media print {
@@ -99,7 +114,7 @@
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(148, 163, 184, 0.5);
+      background: rgba(148, 163, 184, 0.45);
     }
   </style>
 </head>
@@ -108,7 +123,416 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    // High-Resolution 1-Second Parametric Causal Engine
+    // Timeline window: 18:30:00 (0s) to 19:30:00 (3600s)
+    function calculateTelemetryAtSecond(sec) {
+      const clampedSec = Math.max(0, Math.min(3600, sec));
+
+      // Time format
+      const baseMinutes = 30 + Math.floor(clampedSec / 60);
+      const hour = 18 + Math.floor(baseMinutes / 60);
+      const minute = baseMinutes % 60;
+      const second = clampedSec % 60;
+      const timeStr = `${hour}:${minute.toString().padStart(2, "0")}:${second.toString().padStart(2, "0")}`;
+
+      // Deterministic smooth micro-jitter
+      const jitter = Math.sin(clampedSec * 0.45) * 0.15;
+      const jitterLock = Math.cos(clampedSec * 0.3) * 6;
+
+      let kpi = 94.6 + jitter;
+      let lock = 14 + jitterLock;
+      let upi = 98.9;
+      let p502 = 1;
+      let statusTag = "NORMAL BASELINE";
+
+      if (clampedSec < 900) {
+        // 18:30:00 - 18:45:00: Normal baseline
+        kpi = 94.6 + jitter;
+        lock = 14 + jitterLock;
+        p502 = Math.max(0, Math.round(1 + Math.sin(clampedSec * 0.2)));
+      } else if (clampedSec < 1080) {
+        // 18:45:00 - 18:48:00: Flag toggled, contention starts creeping
+        const prog = (clampedSec - 900) / 180;
+        kpi = 94.6 - prog * 2.2 + jitter;
+        lock = 14 + Math.pow(prog, 2) * 496 + jitterLock;
+        statusTag = "FLAG ACTIVATED (18:45)";
+      } else if (clampedSec < 1140) {
+        // 18:48:00 - 18:49:00: Critical DB lock spike onset
+        const prog = (clampedSec - 1080) / 60;
+        kpi = 92.4 - prog * 11.1 + jitter;
+        lock = 510 + Math.pow(prog, 1.8) * 810 + jitterLock;
+        p502 = Math.round(3 + prog * 6);
+        statusTag = "DB LOCK SURGE (18:48)";
+      } else if (clampedSec < 1200) {
+        // 18:49:00 - 18:50:00: Breach onset, sharp completion drop
+        const prog = (clampedSec - 1140) / 60;
+        kpi = 81.3 - prog * 7.3 + jitter;
+        lock = 1320 + prog * 570 + jitterLock;
+        p502 = Math.round(9 + Math.pow(prog, 2) * 39);
+        statusTag = "BREACH ONSET (18:49)";
+      } else if (clampedSec < 1500) {
+        // 18:50:00 - 18:55:00: 502 Symptom surge & stabilization
+        const prog = (clampedSec - 1200) / 300;
+        kpi = 74.0 - prog * 5.5 + jitter;
+        lock = 1890 + prog * 530 + jitterLock;
+        p502 = Math.round(48 + prog * 94);
+        statusTag = "502 SYMPTOM ALARM (18:50)";
+      } else {
+        // 18:55:00 - 19:30:00: Incident plateau
+        const prog = Math.min(1.0, (clampedSec - 1500) / 2100);
+        kpi = 68.5 - prog * 0.8 + jitter;
+        lock = 2420 + prog * 270 + jitterLock;
+        p502 = Math.round(142 + prog * 360);
+        statusTag = "INCIDENT PLATEAU";
+      }
+
+      return {
+        sec: clampedSec,
+        timeStr,
+        kpi: Math.max(55, Math.min(100, kpi)).toFixed(2),
+        lock: Math.max(5, Math.round(lock)),
+        upi: (upi + Math.sin(clampedSec * 0.1) * 0.1).toFixed(1),
+        p502: Math.max(0, p502),
+        statusTag
+      };
+    }
+
+    function TemporalTimeSeriesChart({ isDark }) {
+      const [currentSec, setCurrentSec] = useState(1140); // Default: 18:49:00 (1140s)
+      const [isHovering, setIsHovering] = useState(false);
+      const [showKpi, setShowKpi] = useState(true);
+      const [showLock, setShowLock] = useState(true);
+
+      const width = 1000;
+      const height = 220;
+      const padLeft = 45;
+      const padRight = 55;
+      const padTop = 22;
+      const padBottom = 30;
+
+      const plotW = width - padLeft - padRight;
+      const plotH = height - padTop - padBottom;
+
+      const getX = (sec) => padLeft + (sec / 3600) * plotW;
+      const getY_kpi = (val) => padTop + plotH - ((val - 60) / 40) * plotH;
+      const getY_lock = (val) => padTop + plotH - (val / 3000) * plotH;
+
+      // Sample 72 high-density curve points for smooth vector rendering
+      const curveSamples = useMemo(() => {
+        const samples = [];
+        for (let s = 0; s <= 3600; s += 50) {
+          const t = calculateTelemetryAtSecond(s);
+          samples.push({
+            x: getX(s),
+            y_kpi: getY_kpi(parseFloat(t.kpi)),
+            y_lock: getY_lock(t.lock)
+          });
+        }
+        return samples;
+      }, []);
+
+      const kpiPath = useMemo(() => {
+        return curveSamples.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y_kpi.toFixed(1)}`).join(" ");
+      }, [curveSamples]);
+
+      const lockPath = useMemo(() => {
+        return curveSamples.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y_lock.toFixed(1)}`).join(" ");
+      }, [curveSamples]);
+
+      const kpiArea = `${kpiPath} L ${getX(3600)} ${padTop + plotH} L ${padLeft} ${padTop + plotH} Z`;
+
+      const liveMetrics = useMemo(() => calculateTelemetryAtSecond(currentSec), [currentSec]);
+      const scrubberX = getX(currentSec);
+
+      return (
+        <section className={`border rounded-2xl p-5 md:p-6 glass-card relative overflow-hidden ${isDark ? 'bg-slate-900/70 border-slate-700/60 shadow-2xl' : 'bg-white/85 border-slate-200/90 shadow-xl'
+          }`}>
+          {/* Subtle Ambient Top Border Glow */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-indigo-500 to-amber-400 opacity-80"></div>
+
+          {/* Header Row */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/70">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black tracking-tight text-white flex items-center gap-2">
+                  <span>📈 Causal Telemetry Stream</span>
+                </span>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                  1-Second Granular Pushdown
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Scrub cursor anywhere to inspect second-by-second causal divergence across micro-batches.
+              </p>
+            </div>
+
+            {/* Live Interactive Legend Badges */}
+            <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+              <button
+                onClick={() => setShowKpi(!showKpi)}
+                className={`px-3 py-1.5 rounded-xl border font-semibold flex items-center gap-2 transition floating-pill cursor-pointer ${showKpi ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-lg shadow-cyan-950/40' : 'bg-slate-800/40 text-slate-500 border-slate-700 opacity-60'
+                  }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span>Completion:</span>
+                <span className="font-bold text-cyan-300">{liveMetrics.kpi}%</span>
+              </button>
+
+              <button
+                onClick={() => setShowLock(!showLock)}
+                className={`px-3 py-1.5 rounded-xl border font-semibold flex items-center gap-2 transition floating-pill cursor-pointer ${showLock ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-lg shadow-amber-950/40' : 'bg-slate-800/40 text-slate-500 border-slate-700 opacity-60'
+                  }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span>DB Lock Wait:</span>
+                <span className="font-bold text-amber-300">{liveMetrics.lock}ms</span>
+              </button>
+
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs">
+                <span className="text-slate-400">T:</span>
+                <span className="text-cyan-400">{liveMetrics.timeStr} IST</span>
+              </div>
+            </div>
+          </div>
+
+          {/* High-Resolution Interactive SVG Canvas */}
+          <div className="relative pt-3 overflow-x-auto">
+            <svg
+              className={`w-full min-w-[920px] h-[220px] rounded-xl select-none cursor-crosshair transition-colors ${isDark ? 'bg-[#050812]/90 border border-slate-800/70' : 'bg-slate-50/95 border border-slate-200'
+                }`}
+              viewBox={`0 0 ${width} ${height}`}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const mouseX = ((e.clientX - rect.left) / rect.width) * width;
+                const relX = Math.max(padLeft, Math.min(width - padRight, mouseX));
+                const fraction = (relX - padLeft) / plotW;
+                setCurrentSec(Math.round(fraction * 3600));
+                setIsHovering(true);
+              }}
+              onMouseLeave={() => setIsHovering(false)}
+            >
+              <defs>
+                <linearGradient id="glowKpiGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.30" />
+                  <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+                </linearGradient>
+                <filter id="glow-cursor" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              {/* Baseline Range Shading */}
+              <rect
+                x={padLeft}
+                y={padTop}
+                width={getX(900) - padLeft}
+                height={plotH}
+                fill={isDark ? "rgba(16, 185, 129, 0.05)" : "rgba(16, 185, 129, 0.12)"}
+              />
+              <text x={padLeft + 8} y={padTop + 14} fill="#10b981" fontSize="9" fontFamily="ui-monospace, monospace" fontWeight="700">
+                BASELINE HEALTH WINDOW (94.6%)
+              </text>
+
+              {/* Grid Reference Lines */}
+              {[70, 80, 90].map(v => (
+                <g key={v}>
+                  <line
+                    x1={padLeft}
+                    y1={getY_kpi(v)}
+                    x2={width - padRight}
+                    y2={getY_kpi(v)}
+                    stroke={isDark ? "rgba(51, 65, 85, 0.35)" : "rgba(203, 213, 225, 0.7)"}
+                    strokeDasharray="4,4"
+                  />
+                  <text
+                    x={padLeft - 6}
+                    y={getY_kpi(v) + 3}
+                    fill={isDark ? "#64748b" : "#94a3b8"}
+                    fontSize="9"
+                    fontFamily="ui-monospace, monospace"
+                    textAnchor="end"
+                  >
+                    {v}%
+                  </text>
+                </g>
+              ))}
+
+              {/* Right Y-Axis Marks */}
+              {[1000, 2500].map(v => (
+                <text
+                  key={v}
+                  x={width - padRight + 6}
+                  y={getY_lock(v) + 3}
+                  fill={isDark ? "#d97706" : "#b45309"}
+                  fontSize="9"
+                  fontFamily="ui-monospace, monospace"
+                  textAnchor="start"
+                >
+                  {v}ms
+                </text>
+              ))}
+
+              {/* Red Anomaly Anchor Line at 18:49 */}
+              <line
+                x1={getX(1140)}
+                y1={padTop}
+                x2={getX(1140)}
+                y2={padTop + plotH}
+                stroke="#ef4444"
+                strokeWidth="1.5"
+                strokeDasharray="3,3"
+                opacity="0.75"
+              />
+
+              {/* KPI Completion Fill Area */}
+              {showKpi && (
+                <path d={kpiArea} fill="url(#glowKpiGrad)" />
+              )}
+
+              {/* Surging DB Lock Wait Spline */}
+              {showLock && (
+                <path
+                  d={lockPath}
+                  fill="none"
+                  stroke="#f59e0b"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              )}
+
+              {/* Dropping Completion Rate Spline */}
+              {showKpi && (
+                <path
+                  d={kpiPath}
+                  fill="none"
+                  stroke="#06b6d4"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              )}
+
+              {/* Time Axis Labels */}
+              {[0, 600, 1200, 1800, 2400, 3000, 3600].map(s => {
+                const min = 30 + (s / 60);
+                const h = 18 + Math.floor(min / 60);
+                const m = (min % 60).toString().padStart(2, "0");
+                return (
+                  <text
+                    key={s}
+                    x={getX(s)}
+                    y={padTop + plotH + 18}
+                    fill={isDark ? "#64748b" : "#94a3b8"}
+                    fontSize="9"
+                    fontFamily="ui-monospace, monospace"
+                    textAnchor="middle"
+                  >
+                    {`${h}:${m}`}
+                  </text>
+                );
+              })}
+
+              {/* Dynamic 1-Second Scrubber Bar */}
+              <line
+                x1={scrubberX}
+                y1={padTop}
+                x2={scrubberX}
+                y2={padTop + plotH}
+                stroke="#38bdf8"
+                strokeWidth="2"
+                filter="url(#glow-cursor)"
+              />
+
+              {/* Active Intersection Nodes */}
+              {showKpi && (
+                <circle
+                  cx={scrubberX}
+                  cy={getY_kpi(parseFloat(liveMetrics.kpi))}
+                  r="5"
+                  fill="#06b6d4"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                />
+              )}
+              {showLock && (
+                <circle
+                  cx={scrubberX}
+                  cy={getY_lock(liveMetrics.lock)}
+                  r="5"
+                  fill="#f59e0b"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                />
+              )}
+            </svg>
+          </div>
+
+          {/* Interactive Stepper Navigation (Click any step to jump the scrubber) */}
+          <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <button
+              onClick={() => setCurrentSec(900)}
+              className={`p-2.5 rounded-xl border text-left transition floating-pill cursor-pointer ${currentSec >= 900 && currentSec < 1080 ? 'bg-indigo-950/90 border-indigo-500/70 shadow-lg shadow-indigo-950/50' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-5 rounded-md bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px] font-mono">1</span>
+                <div>
+                  <span className="text-[10px] font-mono text-slate-400 block">18:45:00 IST</span>
+                  <span className="text-slate-200 font-bold text-xs">Flag Toggled</span>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setCurrentSec(1080)}
+              className={`p-2.5 rounded-xl border text-left transition floating-pill cursor-pointer ${currentSec >= 1080 && currentSec < 1140 ? 'bg-amber-950/90 border-amber-500/70 shadow-lg shadow-amber-950/50' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-5 rounded-md bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-[10px] font-mono">2</span>
+                <div>
+                  <span className="text-[10px] font-mono text-slate-400 block">18:48:00 IST</span>
+                  <span className="text-amber-300 font-bold text-xs">DB Lock Spikes</span>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setCurrentSec(1140)}
+              className={`p-2.5 rounded-xl border text-left transition floating-pill cursor-pointer ${currentSec >= 1140 && currentSec < 1200 ? 'bg-rose-950/90 border-rose-500/70 shadow-lg shadow-rose-950/50' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-5 rounded-md bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold text-[10px] font-mono">3</span>
+                <div>
+                  <span className="text-[10px] font-mono text-slate-400 block">18:49:00 IST</span>
+                  <span className="text-rose-300 font-bold text-xs">Completion Drops</span>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setCurrentSec(1200)}
+              className={`p-2.5 rounded-xl border text-left transition floating-pill cursor-pointer ${currentSec >= 1200 ? 'bg-slate-800/90 border-slate-600 shadow-lg shadow-slate-950/50' : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-5 rounded-md bg-slate-500/20 text-slate-400 flex items-center justify-center font-bold text-[10px] font-mono">4</span>
+                <div>
+                  <span className="text-[10px] font-mono text-slate-400 block">18:50:00 IST</span>
+                  <span className="text-slate-400 font-bold text-xs">502 Alarms (Symptom)</span>
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+      );
+    }
 
     function ClarionApp() {
       const [theme, setTheme] = useState(() => localStorage.getItem("clarion_theme") || "dark");
@@ -124,7 +548,6 @@
       const [dossierMarkdown, setDossierMarkdown] = useState("");
       const [dossierId, setDossierId] = useState("");
 
-      // Backend Persistence & Feedback States
       const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
       const [historyDossiers, setHistoryDossiers] = useState([]);
       const [loadingHistory, setLoadingHistory] = useState(false);
@@ -266,13 +689,15 @@
         }
       };
 
+      // AUTHENTICATED OPERATOR FEEDBACK DISPATCH
       const handleSendFeedback = async (hypothesisName, feedbackType) => {
         try {
           await fetch("/api/v1/feedback", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "X-Clarion-Role": "sre-lead"
+              "X-Clarion-Role": "sre-lead",
+              "Authorization": "Bearer clarion-sre-lead-2026"
             },
             body: JSON.stringify({
               dossier_id: dossierId || "DOS-4962FFE2",
@@ -281,7 +706,7 @@
             })
           });
           const delta = feedbackType === "confirm" ? "+0.5" : "-0.5";
-          setFeedbackToast(`Prior Log-Odds shifted ${delta} · Saved to clarion.db`);
+          setFeedbackToast(`Prior Log-Odds shifted ${delta} · Stored in clarion.db`);
           setFeedbackLogged(prev => ({ ...prev, [hypothesisName]: feedbackType }));
           setTimeout(() => setFeedbackToast(null), 4000);
         } catch (err) {
@@ -297,7 +722,7 @@
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center space-y-4">
               <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto shadow-xl shadow-cyan-400/30"></div>
-              <div className="font-mono text-xs tracking-widest text-cyan-400 uppercase font-semibold">Booting Clarion Offline Runtime...</div>
+              <div className="font-mono text-xs tracking-widest text-cyan-400 uppercase font-semibold">Booting Clarion Causal Engine...</div>
             </div>
           </div>
         );
@@ -342,13 +767,12 @@
       const activeNodeIds = new Set(activeNodes.map(n => n?.id).filter(Boolean));
       const activeEdges = graphEdges.filter(e => e?.src && e?.dst && activeNodeIds.has(e.src) && activeNodeIds.has(e.dst));
 
-      // Translucent Glass Classes that let the gradient mesh shine through
       const cardBg = isDark
-        ? "bg-slate-900/65 border-slate-700/50 shadow-2xl shadow-indigo-950/20 frosted-glass"
-        : "bg-white/80 border-slate-200/90 shadow-lg shadow-indigo-100/50 frosted-glass";
+        ? "bg-slate-900/75 border-slate-700/60 shadow-2xl"
+        : "bg-white/85 border-slate-200/90 shadow-lg";
       const tileBg = isDark
-        ? "bg-slate-950/60 border-slate-800/80 frosted-glass"
-        : "bg-white/65 border-slate-200/80 frosted-glass";
+        ? "bg-slate-950/60 border-slate-800/80"
+        : "bg-white/65 border-slate-200/80";
       const textPrimary = isDark ? "text-slate-100" : "text-slate-900";
       const textMuted = isDark ? "text-slate-400" : "text-slate-500";
       const textSecondary = isDark ? "text-slate-300" : "text-slate-700";
@@ -357,14 +781,12 @@
         <div className="p-3 md:p-6">
           <div className="max-w-[1720px] mx-auto space-y-5">
 
-            {/* Top Navigation Bar with Frosted Translucency */}
-            <header className={`border rounded-2xl p-4.5 ${cardBg}`}>
+            {/* Floating Executive Action Dock */}
+            <header className={`border rounded-2xl p-4.5 glass-card ${cardBg}`}>
               <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
-
-                {/* Branding & Status Badges */}
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="text-2xl md:text-3xl font-black tracking-tight bg-gradient-to-r from-cyan-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">
+                    <span className="text-2xl md:text-3xl font-black tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-400 bg-clip-text text-transparent">
                       CLARION
                     </span>
                     <span className={`text-[11px] px-2.5 py-0.5 rounded-md font-mono font-medium border ${isDark ? 'bg-slate-900/80 text-cyan-300 border-cyan-500/30' : 'bg-white/80 text-cyan-800 border-cyan-300'}`}>
@@ -384,23 +806,17 @@
                   </p>
                 </div>
 
-                {/* Compact Single-Row Action Toolbar */}
                 <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
-                  {/* Theme Switcher */}
                   <button
                     onClick={toggleTheme}
-                    title="Toggle Theme"
-                    className={`px-3 py-1.5 rounded-lg border font-mono text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${isDark
-                        ? 'bg-slate-900/90 hover:bg-slate-800 text-amber-300 border-slate-700 shadow-md'
-                        : 'bg-white hover:bg-slate-50 text-indigo-700 border-slate-300 shadow-md'
+                    className={`px-3 py-1.5 rounded-lg border font-mono text-xs font-semibold flex items-center gap-1.5 transition floating-pill cursor-pointer ${isDark ? 'bg-slate-900/90 hover:bg-slate-800 text-amber-300 border-slate-700 shadow-md' : 'bg-white hover:bg-slate-50 text-indigo-700 border-slate-300 shadow-md'
                       }`}
                   >
                     <span>{isDark ? '☀️' : '🌙'}</span>
                     <span className="hidden sm:inline">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
                   </button>
 
-                  {/* Scenario Select */}
-                  <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 text-xs font-mono ${isDark ? 'bg-slate-900/90 border-slate-700/80 text-slate-200 shadow-md' : 'bg-white border-slate-300 text-slate-800 shadow-md'}`}>
+                  <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 text-xs font-mono ${isDark ? 'bg-slate-900/90 border-slate-700/80 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}>
                     <span className={textMuted}>Scenario:</span>
                     <select
                       value={scenario}
@@ -413,8 +829,7 @@
                     </select>
                   </div>
 
-                  {/* Engine Select */}
-                  <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 text-xs font-mono ${isDark ? 'bg-slate-900/90 border-slate-700/80 text-slate-200 shadow-md' : 'bg-white border-slate-300 text-slate-800 shadow-md'}`}>
+                  <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 text-xs font-mono ${isDark ? 'bg-slate-900/90 border-slate-700/80 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}>
                     <span className={textMuted}>Engine:</span>
                     <select
                       value={backend}
@@ -427,31 +842,28 @@
                     </select>
                   </div>
 
-                  {/* Incident History Drawer */}
                   <button
                     onClick={handleOpenHistory}
-                    className={`px-3 py-1.5 font-semibold text-xs rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${isDark ? 'bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border-cyan-500/40 shadow-md' : 'bg-white hover:bg-slate-50 text-cyan-700 border-cyan-500/40 shadow-md'
+                    className={`px-3 py-1.5 font-semibold text-xs rounded-lg border transition floating-pill flex items-center gap-1.5 cursor-pointer ${isDark ? 'bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border-cyan-500/40 shadow-md' : 'bg-white hover:bg-slate-50 text-cyan-700 border-cyan-500/40 shadow-md'
                       }`}
                   >
                     📜 Incident History
                   </button>
 
-                  {/* Export Dossier */}
                   <button
                     onClick={handleOpenDossier}
-                    className={`px-3 py-1.5 font-semibold text-xs rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${isDark ? 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-700 shadow-md' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-md'
+                    className={`px-3 py-1.5 font-semibold text-xs rounded-lg border transition floating-pill flex items-center gap-1.5 cursor-pointer ${isDark ? 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-700 shadow-md' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-md'
                       }`}
                   >
                     📑 Export Dossier
                   </button>
 
-                  {/* Inject Anomaly Button */}
                   <button
                     onClick={() => handleInject(true)}
                     disabled={isBusy}
-                    className={`px-3.5 py-1.5 font-bold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow-lg cursor-pointer ${isBusy
-                        ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 hover:opacity-90 active:scale-95 text-white shadow-indigo-600/30'
+                    className={`px-3.5 py-1.5 font-bold text-xs rounded-lg transition floating-pill flex items-center gap-1.5 shadow-lg cursor-pointer ${isBusy
+                      ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 hover:opacity-95 active:scale-95 text-white shadow-indigo-600/40'
                       }`}
                   >
                     {loading ? (
@@ -462,13 +874,12 @@
                     {isBusy ? 'Analyzing...' : 'Inject Anomaly'}
                   </button>
                 </div>
-
               </div>
             </header>
 
             {/* Naive Monitoring Alert Simulation Banner */}
             {phase === "naive_alert" && (
-              <div className="bg-gradient-to-r from-red-950/90 via-red-900/80 to-rose-950/90 border-2 border-red-500 rounded-2xl p-5 shadow-2xl shadow-red-950/50 animate-pulse">
+              <div className="bg-gradient-to-r from-red-950/90 via-red-900/80 to-rose-950/90 border-2 border-red-500 rounded-2xl p-5 shadow-2xl animate-pulse">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600/30 border border-red-500/50 text-red-300 text-2xl font-black">!</span>
@@ -484,9 +895,6 @@
                       <h2 className="text-xl md:text-2xl font-black text-white mt-1">
                         {naive_alert?.label} detected (+{naive_alert?.sigma}σ anomaly)
                       </h2>
-                      <p className="text-xs text-red-200/80 mt-0.5">
-                        Standard threshold alert triggered by symptom metric. Running causal pushdown in DuckDB...
-                      </p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -499,7 +907,7 @@
 
             {/* Bento-Grid Incident Status Metrics */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className={`p-4 rounded-2xl border ${tileBg}`}>
+              <div className={`p-4 rounded-2xl border glass-card ${tileBg}`}>
                 <div className="flex items-center justify-between">
                   <span className={`text-[11px] uppercase tracking-wider font-bold mono ${textMuted}`}>Incident Status</span>
                   <span className="text-xs font-mono text-cyan-400 font-semibold">BLR-S Hub</span>
@@ -513,7 +921,7 @@
                 <span className={`text-[11px] mono block mt-2 ${textMuted}`}>Deterministic Evaluation</span>
               </div>
 
-              <div className={`p-4 rounded-2xl border ${tileBg}`}>
+              <div className={`p-4 rounded-2xl border glass-card ${tileBg}`}>
                 <div className="flex items-center justify-between">
                   <span className={`text-[11px] uppercase tracking-wider font-bold mono ${textMuted}`}>Completion Rate Drop</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono font-bold">CRITICAL IMPACT</span>
@@ -525,7 +933,7 @@
                 <span className={`text-[11px] mono block mt-2 ${textMuted}`}>Severity: Critical Business Degrade</span>
               </div>
 
-              <div className={`p-4 rounded-2xl border ${tileBg}`}>
+              <div className={`p-4 rounded-2xl border glass-card ${tileBg}`}>
                 <div className="flex items-center justify-between">
                   <span className={`text-[11px] uppercase tracking-wider font-bold mono ${textMuted}`}>KPI Baseline → Incident</span>
                   <span className="text-xs font-mono text-indigo-400 font-semibold">18:49-21:30 IST</span>
@@ -538,7 +946,7 @@
                 <span className={`text-[11px] mono block mt-2 ${textMuted}`}>Delta: -26.9 percentage points</span>
               </div>
 
-              <div className={`p-4 rounded-2xl border ${tileBg}`}>
+              <div className={`p-4 rounded-2xl border glass-card ${tileBg}`}>
                 <div className="flex items-center justify-between">
                   <span className={`text-[11px] uppercase tracking-wider font-bold mono ${textMuted}`}>Anomaly Onset</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono font-bold">TEMPORAL ROOT</span>
@@ -550,11 +958,12 @@
               </div>
             </section>
 
+            {/* UPGRADED 1-SECOND CAUSAL TIME SERIES TELEMETRY */}
+            <TemporalTimeSeriesChart isDark={isDark} />
+
             {/* Split Comparison Cards: Red Herring vs True Root Cause */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-              {/* Left Card: Red Herring / Suppressed Symptom */}
-              <div className={`border rounded-2xl p-5 md:p-6 flex flex-col justify-between ${cardBg}`}>
+              <div className={`border rounded-2xl p-5 md:p-6 flex flex-col justify-between glass-card ${cardBg}`}>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-xs uppercase font-extrabold tracking-wider font-mono text-slate-400 flex items-center gap-1.5">
@@ -586,7 +995,6 @@
                     </div>
                   </div>
 
-                  {/* Counterfactual Isolation Box */}
                   <div className={`border rounded-xl p-4 text-xs space-y-2 ${tileBg}`}>
                     <div className="flex justify-between items-center font-semibold">
                       <span className={textSecondary}>Counterfactual Cancellation Share:</span>
@@ -601,7 +1009,6 @@
                     </p>
                   </div>
 
-                  {/* Evidence Trail */}
                   <div className="space-y-2 pt-1">
                     <span className={`text-xs uppercase font-extrabold tracking-wider font-mono block ${textMuted}`}>
                       Evidence Verification Trail (6 Signals)
@@ -615,8 +1022,8 @@
                             <span className={textSecondary}>{ev?.text}</span>
                           </div>
                           <span className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] whitespace-nowrap border ${isRefuted
-                              ? 'bg-rose-950/70 text-rose-300 border-rose-800'
-                              : isDark ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-slate-200 text-slate-700 border-slate-300'
+                            ? 'bg-rose-950/70 text-rose-300 border-rose-800'
+                            : isDark ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-slate-200 text-slate-700 border-slate-300'
                             }`}>
                             LR {(ev?.lr ?? 1).toFixed(3)}
                           </span>
@@ -627,10 +1034,9 @@
                 </div>
               </div>
 
-              {/* Right Card: Verified True Root Cause with Cyan & Emerald Glow */}
-              <div className={`border-2 rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden ${isDark
-                  ? 'bg-slate-900/80 border-cyan-500/70 shadow-cyan-950/50 frosted-glass'
-                  : 'bg-white/85 border-cyan-500 shadow-cyan-100 frosted-glass'
+              <div className={`border-2 rounded-2xl p-5 md:p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden glass-card ${isDark
+                ? 'bg-slate-900/80 border-cyan-500/70 shadow-cyan-950/50'
+                : 'bg-white/85 border-cyan-500 shadow-cyan-100'
                 }`}>
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-emerald-400 to-indigo-500"></div>
 
@@ -662,7 +1068,6 @@
                     </div>
                   </div>
 
-                  {/* Counterfactual Isolation Box */}
                   <div className={`border rounded-xl p-4 text-xs space-y-2 ${isDark ? 'bg-slate-950/80 border-cyan-900/60' : 'bg-white/80 border-cyan-200'}`}>
                     <div className="flex justify-between items-center font-semibold">
                       <span className={textSecondary}>Counterfactual Failure Share:</span>
@@ -677,7 +1082,6 @@
                     </p>
                   </div>
 
-                  {/* Operator Bayesian Feedback Loop Console */}
                   <div className={`border rounded-xl p-4 text-xs space-y-3 ${isDark ? 'bg-slate-950/90 border-emerald-500/50 shadow-inner' : 'bg-white/90 border-emerald-300 shadow-sm'}`}>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider font-extrabold flex items-center gap-1.5">
@@ -693,9 +1097,9 @@
                       <button
                         onClick={() => handleSendFeedback(rootCause?.name, "confirm")}
                         disabled={feedbackLogged[rootCause?.name] === "confirm"}
-                        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${feedbackLogged[rootCause?.name] === "confirm"
-                            ? "bg-emerald-800 text-white cursor-default"
-                            : "bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white shadow-emerald-600/40"
+                        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-mono font-bold transition floating-pill flex items-center justify-center gap-2 shadow-lg cursor-pointer ${feedbackLogged[rootCause?.name] === "confirm"
+                          ? "bg-emerald-800 text-white cursor-default"
+                          : "bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white shadow-emerald-600/40"
                           }`}
                       >
                         {feedbackLogged[rootCause?.name] === "confirm" ? (
@@ -708,9 +1112,9 @@
                       <button
                         onClick={() => handleSendFeedback(rootCause?.name, "reject")}
                         disabled={feedbackLogged[rootCause?.name] === "reject"}
-                        className={`py-2.5 px-3 rounded-xl text-xs font-mono font-semibold border transition-all cursor-pointer ${feedbackLogged[rootCause?.name] === "reject"
-                            ? "bg-rose-950 text-rose-300 border-rose-600 cursor-default"
-                            : isDark ? "bg-slate-900 hover:bg-rose-950/60 text-slate-300 hover:text-rose-300 border-slate-700" : "bg-slate-100 hover:bg-rose-50 text-slate-700 border-slate-300"
+                        className={`py-2.5 px-3 rounded-xl text-xs font-mono font-semibold border transition floating-pill cursor-pointer ${feedbackLogged[rootCause?.name] === "reject"
+                          ? "bg-rose-950 text-rose-300 border-rose-600 cursor-default"
+                          : isDark ? "bg-slate-900 hover:bg-rose-950/60 text-slate-300 hover:text-rose-300 border-slate-700" : "bg-slate-100 hover:bg-rose-50 text-slate-700 border-slate-300"
                           }`}
                       >
                         {feedbackLogged[rootCause?.name] === "reject" ? "✕ Rejected" : "✕ Reject"}
@@ -722,7 +1126,6 @@
                     </p>
                   </div>
 
-                  {/* Evidence Trail */}
                   <div className="space-y-2 pt-1">
                     <span className="text-xs uppercase font-extrabold tracking-wider font-mono text-cyan-400 block">
                       Evidence Verification Trail (4 Corroborations)
@@ -743,8 +1146,8 @@
               </div>
             </section>
 
-            {/* SVG Causal Evidence Graph with Bezier Splines & Glowing Halo Nodes */}
-            <section className={`border rounded-2xl p-5 md:p-6 ${cardBg}`}>
+            {/* SVG Causal Evidence Graph with Bezier Splines */}
+            <section className={`border rounded-2xl p-5 md:p-6 glass-card ${cardBg}`}>
               <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b gap-3 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
                 <div>
                   <h3 className={`text-lg font-black flex items-center gap-2.5 ${textPrimary}`}>
@@ -758,7 +1161,6 @@
                   </p>
                 </div>
 
-                {/* Graph Legend */}
                 <div className="flex flex-wrap items-center gap-3 text-xs">
                   {Object.entries(rolePalette).map(([roleKey, styling]) => (
                     <span key={roleKey} className="flex items-center gap-1.5 font-mono text-[11px]">
@@ -769,18 +1171,15 @@
                 </div>
               </div>
 
-              {/* Canvas Container */}
               <div className="relative overflow-x-auto pt-4">
                 <svg
-                  className={`w-full min-w-[1050px] h-[480px] rounded-2xl border transition-colors ${isDark ? 'bg-[#050811]/85 border-slate-800/80' : 'bg-[#f8fafc]/90 border-slate-200'
-                    }`}
+                  className={`w-full min-w-[1050px] h-[480px] rounded-2xl border transition-colors ${isDark ? 'bg-[#050811]/85 border-slate-800/80' : 'bg-[#f8fafc]/90 border-slate-200'}`}
                   viewBox="0 0 1100 470"
                 >
                   <defs>
                     <pattern id="graph-grid" width="40" height="40" patternUnits="userSpaceOnUse">
                       <path d="M 40 0 L 0 0 0 40" fill="none" stroke={isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(226, 232, 240, 0.9)"} strokeWidth="1" />
                     </pattern>
-
                     <filter id="glow-root" x="-30%" y="-30%" width="160%" height="160%">
                       <feGaussianBlur stdDeviation="5" result="blur" />
                       <feMerge>
@@ -795,7 +1194,6 @@
                         <feMergeNode in="SourceGraphic" />
                       </feMerge>
                     </filter>
-
                     <marker id="arrow-causes" viewBox="0 0 10 10" refX="24" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                       <path d="M 0 1 L 9 5 L 0 9 z" fill="#ef4444" />
                     </marker>
@@ -812,7 +1210,6 @@
 
                   <rect width="1100" height="470" fill="url(#graph-grid)" />
 
-                  {/* Swim Lanes with Labels */}
                   {Object.entries({
                     audit: { y: 20, h: 95, label: "Audit Log · Configuration & Deadlock Commits" },
                     telemetry: { y: 125, h: 105, label: "Telemetry Time-Series · Latencies & Error Gauges" },
@@ -844,7 +1241,6 @@
                     </g>
                   ))}
 
-                  {/* Bezier Spline Edge Connections */}
                   {activeEdges.map((edge, idx) => {
                     const srcNode = activeNodes.find(n => n?.id === edge.src);
                     const dstNode = activeNodes.find(n => n?.id === edge.dst);
@@ -889,7 +1285,6 @@
                     );
                   })}
 
-                  {/* Nodes & Frosted Badges */}
                   {activeNodes.map((node) => {
                     if (!node) return null;
                     const x = getNodeX(node.id);
@@ -968,9 +1363,8 @@
                   })}
                 </svg>
 
-                {/* Selected Node Inspector Detail Banner */}
                 {selectedNode && (
-                  <div className={`mt-3 p-4 border rounded-xl text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-md ${cardBg}`}>
+                  <div className={`mt-3 p-4 border rounded-xl text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-md glass-card ${cardBg}`}>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`font-bold text-sm ${textPrimary}`}>{selectedNode?.label}</span>
@@ -998,9 +1392,7 @@
 
             {/* Lower Grid: Datadog-Grade Trace Terminal & SRE Analytics */}
             <div ref={lowerSectionRef} className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
-              {/* Agent Trace Terminal (Left 7 Cols) */}
-              <div className={`lg:col-span-7 border rounded-2xl p-5 flex flex-col h-[520px] ${cardBg}`}>
+              <div className={`lg:col-span-7 border rounded-2xl p-5 flex flex-col h-[520px] glass-card ${cardBg}`}>
                 <div className={`flex items-center justify-between pb-3 border-b mb-3 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-rose-500"></span>
@@ -1042,11 +1434,8 @@
                 </div>
               </div>
 
-              {/* Right Column: Ranked Root Causes & Advisory Remediation (5 Cols) */}
               <div className="lg:col-span-5 space-y-5">
-
-                {/* Ranked Causes Card */}
-                <div className={`border rounded-2xl p-5 ${cardBg}`}>
+                <div className={`border rounded-2xl p-5 glass-card ${cardBg}`}>
                   <h4 className={`text-xs font-black uppercase tracking-wider font-mono mb-3 ${textPrimary}`}>
                     Ranked Probable Root Causes
                   </h4>
@@ -1064,8 +1453,8 @@
                               </span>
                             </div>
                             <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded uppercase ${isRoot ? 'bg-emerald-600 text-white' :
-                                item.verdict === 'SUPPRESSED_NOISE' ? 'bg-slate-500 text-white' :
-                                  'bg-indigo-600 text-white'
+                              item.verdict === 'SUPPRESSED_NOISE' ? 'bg-slate-500 text-white' :
+                                'bg-indigo-600 text-white'
                               }`}>
                               {item.verdict}
                             </span>
@@ -1074,7 +1463,7 @@
                           <div className={`w-full rounded-full h-2 my-2.5 overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${isRoot ? 'bg-gradient-to-r from-cyan-400 to-emerald-400 shadow-md shadow-cyan-400/50' :
-                                  item.verdict === 'SUPPRESSED_NOISE' ? 'bg-slate-500' : 'bg-indigo-500'
+                                item.verdict === 'SUPPRESSED_NOISE' ? 'bg-slate-500' : 'bg-indigo-500'
                                 }`}
                               style={{ width: `${Math.round((item.confidence ?? 0) * 100)}%` }}
                             ></div>
@@ -1090,8 +1479,7 @@
                   </div>
                 </div>
 
-                {/* Advisory Remediation Plan */}
-                <div className={`border rounded-2xl p-5 ${cardBg}`}>
+                <div className={`border rounded-2xl p-5 glass-card ${cardBg}`}>
                   <div className="flex items-center justify-between mb-3">
                     <h4 className={`text-xs font-black uppercase tracking-wider font-mono ${textPrimary}`}>
                       Advisory Remediation Plan
@@ -1120,7 +1508,6 @@
                     })}
                   </div>
                 </div>
-
               </div>
             </div>
 
@@ -1129,7 +1516,7 @@
               <div className="fixed inset-0 z-50 overflow-hidden">
                 <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowHistoryDrawer(false)}></div>
                 <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-                  <div className={`w-screen max-w-md border-l p-6 flex flex-col shadow-2xl ${isDark ? 'bg-[#090e1a]/95 border-slate-800 text-slate-100 frosted-glass' : 'bg-white/95 border-slate-200 text-slate-900 frosted-glass'}`}>
+                  <div className={`w-screen max-w-md border-l p-6 flex flex-col shadow-2xl glass-card ${isDark ? 'bg-[#090e1a]/95 border-slate-800 text-slate-100' : 'bg-white/95 border-slate-200 text-slate-900'}`}>
                     <div className={`flex items-center justify-between pb-4 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
                       <div>
                         <h3 className={`text-base font-black flex items-center gap-2 ${textPrimary}`}>
@@ -1179,7 +1566,7 @@
             {/* Dossier Export Modal */}
             {showDossierModal && (
               <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className={`border rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl ${cardBg}`}>
+                <div className={`border rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl glass-card ${cardBg}`}>
                   <div className={`p-4 border-b flex items-center justify-between ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
                     <div>
                       <h3 className={`font-black text-base ${textPrimary}`}>Clarion Auditable Incident Dossier</h3>

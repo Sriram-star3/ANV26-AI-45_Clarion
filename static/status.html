@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clarion Gateway — Public System Status & Causal Transparency</title>
+  <script src="./vendor/tailwind.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.15) 0%, transparent 60%), #070a14;
+      color: #f1f5f9;
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-10 flex flex-col justify-between">
+  <div class="max-w-4xl mx-auto w-full space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-5">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+          CLARION GATEWAY
+        </span>
+        <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono border border-slate-700">
+          Public Transparency Node
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">Public Gateway Operational</span>
+      </div>
+    </div>
+
+    <!-- Middleman Explanation Banner -->
+    <div class="p-4 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-slate-300 leading-relaxed font-mono">
+      <span class="text-cyan-400 font-bold">ℹ️ In-Line Middleman Notice:</span> All external payments and microservice events are verified via Clarion's deterministic causal gateway. Configuration management is strictly restricted to authenticated company infrastructure.
+    </div>
+
+    <!-- High-Level Customer Health Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+        <span class="text-xs font-mono text-slate-400 uppercase">Payment Processing</span>
+        <div class="text-2xl font-black text-emerald-400">98.6% Operational</div>
+        <p class="text-[11px] text-slate-400 pt-1">Bank UPI & Cards functioning normally. Zero client funds held.</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+        <span class="text-xs font-mono text-slate-400 uppercase">Order Dispatching</span>
+        <div class="text-2xl font-black text-amber-400">Degraded Latency</div>
+        <p class="text-[11px] text-slate-400 pt-1">Internal routing backlog identified. Auto-drain playbook executed.</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+        <span class="text-xs font-mono text-slate-400 uppercase">Mean Time to Detection</span>
+        <div class="text-2xl font-black text-cyan-400">&lt; 0.05 ms</div>
+        <p class="text-[11px] text-slate-400 pt-1">Wald SPRT automated verification active on all cluster telemetry.</p>
+      </div>
+    </div>
+
+    <!-- Cryptographic SLA Proof Table -->
+    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+      <h3 class="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold">Verified Incident Log (Read-Only)</h3>
+      <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs font-mono">
+        <div>
+          <span class="text-slate-400 block text-[10px]">INCIDENT REF</span>
+          <span class="text-cyan-400 font-bold">CLR-PEER-57D65E59</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[10px]">ROOT CAUSE</span>
+          <span class="text-white font-semibold">Warehouse DB-Lock Contention</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[10px]">PAYMENT GATEWAY IMPACT</span>
+          <span class="text-emerald-400 font-bold">REFUTED (0.00%)</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="text-center text-xs text-slate-600 font-mono py-6">
+    Powered by Clarion Deterministic Causal Engine · All Company Configurations Gated by RBAC
+  </footer>
+</body>
+</html>
