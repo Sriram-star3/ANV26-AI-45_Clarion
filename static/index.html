@@ -148,39 +148,33 @@
       let statusTag = "NORMAL BASELINE";
 
       if (clampedSec < 900) {
-        // 18:30:00 - 18:45:00: Normal baseline
         kpi = 94.6 + jitter;
         lock = 14 + jitterLock;
         p502 = Math.max(0, Math.round(1 + Math.sin(clampedSec * 0.2)));
       } else if (clampedSec < 1080) {
-        // 18:45:00 - 18:48:00: Flag toggled, contention starts creeping
         const prog = (clampedSec - 900) / 180;
         kpi = 94.6 - prog * 2.2 + jitter;
         lock = 14 + Math.pow(prog, 2) * 496 + jitterLock;
         statusTag = "FLAG ACTIVATED (18:45)";
       } else if (clampedSec < 1140) {
-        // 18:48:00 - 18:49:00: Critical DB lock spike onset
         const prog = (clampedSec - 1080) / 60;
         kpi = 92.4 - prog * 11.1 + jitter;
         lock = 510 + Math.pow(prog, 1.8) * 810 + jitterLock;
         p502 = Math.round(3 + prog * 6);
         statusTag = "DB LOCK SURGE (18:48)";
       } else if (clampedSec < 1200) {
-        // 18:49:00 - 18:50:00: Breach onset, sharp completion drop
         const prog = (clampedSec - 1140) / 60;
         kpi = 81.3 - prog * 7.3 + jitter;
         lock = 1320 + prog * 570 + jitterLock;
         p502 = Math.round(9 + Math.pow(prog, 2) * 39);
         statusTag = "BREACH ONSET (18:49)";
       } else if (clampedSec < 1500) {
-        // 18:50:00 - 18:55:00: 502 Symptom surge & stabilization
         const prog = (clampedSec - 1200) / 300;
         kpi = 74.0 - prog * 5.5 + jitter;
         lock = 1890 + prog * 530 + jitterLock;
         p502 = Math.round(48 + prog * 94);
         statusTag = "502 SYMPTOM ALARM (18:50)";
       } else {
-        // 18:55:00 - 19:30:00: Incident plateau
         const prog = Math.min(1.0, (clampedSec - 1500) / 2100);
         kpi = 68.5 - prog * 0.8 + jitter;
         lock = 2420 + prog * 270 + jitterLock;
@@ -200,7 +194,7 @@
     }
 
     function TemporalTimeSeriesChart({ isDark }) {
-      const [currentSec, setCurrentSec] = useState(1140); // Default: 18:49:00 (1140s)
+      const [currentSec, setCurrentSec] = useState(1140);
       const [isHovering, setIsHovering] = useState(false);
       const [showKpi, setShowKpi] = useState(true);
       const [showLock, setShowLock] = useState(true);
@@ -219,7 +213,6 @@
       const getY_kpi = (val) => padTop + plotH - ((val - 60) / 40) * plotH;
       const getY_lock = (val) => padTop + plotH - (val / 3000) * plotH;
 
-      // Sample 72 high-density curve points for smooth vector rendering
       const curveSamples = useMemo(() => {
         const samples = [];
         for (let s = 0; s <= 3600; s += 50) {
@@ -249,10 +242,8 @@
       return (
         <section className={`border rounded-2xl p-5 md:p-6 glass-card relative overflow-hidden ${isDark ? 'bg-slate-900/70 border-slate-700/60 shadow-2xl' : 'bg-white/85 border-slate-200/90 shadow-xl'
           }`}>
-          {/* Subtle Ambient Top Border Glow */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-indigo-500 to-amber-400 opacity-80"></div>
 
-          {/* Header Row */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/70">
             <div>
               <div className="flex items-center gap-2">
@@ -268,7 +259,6 @@
               </p>
             </div>
 
-            {/* Live Interactive Legend Badges */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
               <button
                 onClick={() => setShowKpi(!showKpi)}
@@ -297,7 +287,6 @@
             </div>
           </div>
 
-          {/* High-Resolution Interactive SVG Canvas */}
           <div className="relative pt-3 overflow-x-auto">
             <svg
               className={`w-full min-w-[920px] h-[220px] rounded-xl select-none cursor-crosshair transition-colors ${isDark ? 'bg-[#050812]/90 border border-slate-800/70' : 'bg-slate-50/95 border border-slate-200'
@@ -327,7 +316,6 @@
                 </filter>
               </defs>
 
-              {/* Baseline Range Shading */}
               <rect
                 x={padLeft}
                 y={padTop}
@@ -339,7 +327,6 @@
                 BASELINE HEALTH WINDOW (94.6%)
               </text>
 
-              {/* Grid Reference Lines */}
               {[70, 80, 90].map(v => (
                 <g key={v}>
                   <line
@@ -363,7 +350,6 @@
                 </g>
               ))}
 
-              {/* Right Y-Axis Marks */}
               {[1000, 2500].map(v => (
                 <text
                   key={v}
@@ -378,7 +364,6 @@
                 </text>
               ))}
 
-              {/* Red Anomaly Anchor Line at 18:49 */}
               <line
                 x1={getX(1140)}
                 y1={padTop}
@@ -390,12 +375,10 @@
                 opacity="0.75"
               />
 
-              {/* KPI Completion Fill Area */}
               {showKpi && (
                 <path d={kpiArea} fill="url(#glowKpiGrad)" />
               )}
 
-              {/* Surging DB Lock Wait Spline */}
               {showLock && (
                 <path
                   d={lockPath}
@@ -406,7 +389,6 @@
                 />
               )}
 
-              {/* Dropping Completion Rate Spline */}
               {showKpi && (
                 <path
                   d={kpiPath}
@@ -417,7 +399,6 @@
                 />
               )}
 
-              {/* Time Axis Labels */}
               {[0, 600, 1200, 1800, 2400, 3000, 3600].map(s => {
                 const min = 30 + (s / 60);
                 const h = 18 + Math.floor(min / 60);
@@ -437,7 +418,6 @@
                 );
               })}
 
-              {/* Dynamic 1-Second Scrubber Bar */}
               <line
                 x1={scrubberX}
                 y1={padTop}
@@ -448,7 +428,6 @@
                 filter="url(#glow-cursor)"
               />
 
-              {/* Active Intersection Nodes */}
               {showKpi && (
                 <circle
                   cx={scrubberX}
@@ -472,7 +451,6 @@
             </svg>
           </div>
 
-          {/* Interactive Stepper Navigation (Click any step to jump the scrubber) */}
           <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-2.5">
             <button
               onClick={() => setCurrentSec(900)}
@@ -553,6 +531,18 @@
       const [loadingHistory, setLoadingHistory] = useState(false);
       const [feedbackToast, setFeedbackToast] = useState(null);
       const [feedbackLogged, setFeedbackLogged] = useState({});
+      const [authUser, setAuthUser] = useState(null);
+
+      useEffect(() => {
+        fetch('/auth/me')
+          .then(res => res.json())
+          .then(data => {
+            if (data.authenticated && data.user) {
+              setAuthUser(data.user);
+            }
+          })
+          .catch(err => console.error('[Clarion Auth]', err));
+      }, []);
 
       const terminalContainerRef = useRef(null);
       const lowerSectionRef = useRef(null);
@@ -598,7 +588,8 @@
 
       useEffect(() => {
         if ((phase === "streaming_trace" || phase === "verdict") && lowerSectionRef.current) {
-          lowerSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+          // Auto-scroll disabled to maintain viewport stability on load
+          // lowerSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, [phase]);
 
@@ -669,7 +660,21 @@
           console.error("Dossier error:", e);
         }
       };
-
+      const handleExportGraphSvg = () => {
+        const svgEl = document.getElementById("causal-evidence-graph-svg");
+        if (!svgEl) return;
+        const serializer = new XMLSerializer();
+        const svgSource = serializer.serializeToString(svgEl);
+        const blob = new Blob([svgSource], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `clarion-causal-graph-${dossierId || 'evidence'}.svg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      };
       const handleOpenHistory = async () => {
         setShowHistoryDrawer(true);
         setLoadingHistory(true);
@@ -782,8 +787,10 @@
           <div className="max-w-[1720px] mx-auto space-y-5">
 
             {/* Floating Executive Action Dock */}
-            <header className={`border rounded-2xl p-4.5 glass-card ${cardBg}`}>
+            <header className={`border rounded-2xl p-4 md:p-5 glass-card ${cardBg}`}>
               <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
+
+                {/* Brand & Telemetry Subtitle */}
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="text-2xl md:text-3xl font-black tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-400 bg-clip-text text-transparent">
@@ -806,64 +813,120 @@
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
-                  <button
-                    onClick={toggleTheme}
-                    className={`px-3 py-1.5 rounded-lg border font-mono text-xs font-semibold flex items-center gap-1.5 transition floating-pill cursor-pointer ${isDark ? 'bg-slate-900/90 hover:bg-slate-800 text-amber-300 border-slate-700 shadow-md' : 'bg-white hover:bg-slate-50 text-indigo-700 border-slate-300 shadow-md'
-                      }`}
-                  >
-                    <span>{isDark ? '☀️' : '🌙'}</span>
-                    <span className="hidden sm:inline">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-                  </button>
+                {/* Right Action Controls Pod */}
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0 xl:justify-end">
 
-                  <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 text-xs font-mono ${isDark ? 'bg-slate-900/90 border-slate-700/80 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}>
-                    <span className={textMuted}>Scenario:</span>
-                    <select
-                      value={scenario}
-                      disabled={isBusy}
-                      onChange={(e) => setScenario(e.target.value)}
-                      className="bg-transparent font-semibold focus:outline-none cursor-pointer"
+                  {/* Selectors Group */}
+                  <div className={`flex items-center gap-1.5 p-1 rounded-xl border ${isDark ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-100/80 border-slate-200'}`}>
+                    <button
+                      onClick={toggleTheme}
+                      title={`Switch to ${isDark ? 'Light' : 'Dark'} mode`}
+                      className={`h-7 px-2.5 rounded-lg border font-mono text-xs font-semibold flex items-center gap-1.5 transition floating-pill cursor-pointer ${isDark
+                        ? 'bg-slate-900/90 text-amber-300 border-slate-700/80 hover:bg-slate-800'
+                        : 'bg-white text-indigo-700 border-slate-300 hover:bg-slate-50'
+                        }`}
                     >
-                      <option value="festival_deadlock" className={isDark ? "bg-slate-900" : "bg-white"}>festival_deadlock (DB-Lock Issue)</option>
-                      <option value="gateway_outage" className={isDark ? "bg-slate-900" : "bg-white"}>gateway_outage (Gateway Crash)</option>
-                    </select>
+                      <span>{isDark ? '☀️' : '🌙'}</span>
+                      <span className="hidden sm:inline text-[11px]">{isDark ? 'Light' : 'Dark'}</span>
+                    </button>
+
+                    <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 h-7 text-xs font-mono ${isDark ? 'bg-slate-900/90 border-slate-700/80 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                      }`}>
+                      <span className={textMuted}>Scenario:</span>
+                      <select
+                        value={scenario}
+                        disabled={isBusy}
+                        onChange={(e) => setScenario(e.target.value)}
+                        className="bg-transparent font-semibold focus:outline-none cursor-pointer text-xs"
+                      >
+                        <option value="festival_deadlock" className={isDark ? "bg-slate-900" : "bg-white"}>festival_deadlock (DB-Lock)</option>
+                        <option value="gateway_outage" className={isDark ? "bg-slate-900" : "bg-white"}>gateway_outage (Gateway Crash)</option>
+                      </select>
+                    </div>
+
+                    <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 h-7 text-xs font-mono ${isDark ? 'bg-slate-900/90 border-slate-700/80 text-slate-200' : 'bg-white border-slate-300 text-slate-800'
+                      }`}>
+                      <span className={textMuted}>Engine:</span>
+                      <select
+                        value={backend}
+                        disabled={isBusy}
+                        onChange={(e) => setBackend(e.target.value)}
+                        className="bg-transparent font-semibold focus:outline-none cursor-pointer text-xs"
+                      >
+                        <option value="csv" className={isDark ? "bg-slate-900" : "bg-white"}>CSV Micro-batch</option>
+                        <option value="duckdb" className={isDark ? "bg-slate-900" : "bg-white"}>DuckDB Pushdown</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div className={`flex items-center gap-1.5 border rounded-lg px-2.5 py-1.5 text-xs font-mono ${isDark ? 'bg-slate-900/90 border-slate-700/80 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}>
-                    <span className={textMuted}>Engine:</span>
-                    <select
-                      value={backend}
-                      disabled={isBusy}
-                      onChange={(e) => setBackend(e.target.value)}
-                      className="bg-transparent font-semibold focus:outline-none cursor-pointer"
+                  {/* Incident Utilities */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleOpenHistory}
+                      className={`h-7 px-3 font-semibold text-xs rounded-lg border transition floating-pill flex items-center gap-1.5 cursor-pointer ${isDark
+                        ? 'bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border-cyan-500/40'
+                        : 'bg-white hover:bg-slate-50 text-cyan-700 border-cyan-500/40'
+                        }`}
                     >
-                      <option value="csv" className={isDark ? "bg-slate-900" : "bg-white"}>CSV Micro-batch</option>
-                      <option value="duckdb" className={isDark ? "bg-slate-900" : "bg-white"}>DuckDB Pushdown</option>
-                    </select>
+                      📜 Incident History
+                    </button>
+
+                    <button
+                      onClick={handleOpenDossier}
+                      className={`h-7 px-3 font-semibold text-xs rounded-lg border transition floating-pill flex items-center gap-1.5 cursor-pointer ${isDark
+                        ? 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-700'
+                        : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
+                        }`}
+                    >
+                      📋 Export Dossier
+                    </button>
                   </div>
 
-                  <button
-                    onClick={handleOpenHistory}
-                    className={`px-3 py-1.5 font-semibold text-xs rounded-lg border transition floating-pill flex items-center gap-1.5 cursor-pointer ${isDark ? 'bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border-cyan-500/40 shadow-md' : 'bg-white hover:bg-slate-50 text-cyan-700 border-cyan-500/40 shadow-md'
-                      }`}
-                  >
-                    📜 Incident History
-                  </button>
+                  {/* Vertical Divider */}
+                  <div className={`hidden sm:block h-5 w-px ${isDark ? 'bg-slate-800' : 'bg-slate-300'} mx-0.5`} />
 
-                  <button
-                    onClick={handleOpenDossier}
-                    className={`px-3 py-1.5 font-semibold text-xs rounded-lg border transition floating-pill flex items-center gap-1.5 cursor-pointer ${isDark ? 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-700 shadow-md' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-md'
-                      }`}
-                  >
-                    📑 Export Dossier
-                  </button>
+                  {/* Google Authenticated SRE Badge */}
+                  {authUser ? (
+                    <div className={`flex items-center gap-2 h-7 px-2.5 rounded-lg border shadow-sm ${isDark
+                      ? 'bg-slate-900/95 border-emerald-500/50 shadow-emerald-950/40'
+                      : 'bg-white border-emerald-500/60 shadow-slate-200'
+                      }`}>
+                      <img
+                        src={authUser.picture || "https://lh3.googleusercontent.com/a/default-user=s96-c"}
+                        alt={authUser.name}
+                        referrerPolicy="no-referrer"
+                        className="w-4 h-4 rounded-full border border-emerald-400 object-cover"
+                      />
+                      <span className={`text-xs font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                        {authUser.name}
+                      </span>
+                      <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-1.5 py-0.5 rounded tracking-wider font-mono">
+                        SRE LEAD
+                      </span>
+                      <a
+                        href="/auth/logout"
+                        title={`Sign out (${authUser.email})`}
+                        className="ml-0.5 text-slate-400 hover:text-rose-400 text-xs transition-colors leading-none"
+                      >
+                        ✕
+                      </a>
+                    </div>
+                  ) : (
+                    <a
+                      href="/auth/google"
+                      className="h-7 px-3 font-semibold text-xs rounded-lg border border-sky-500/50 text-sky-400 bg-sky-950/30 hover:bg-sky-900/40 transition flex items-center"
+                    >
+                      Sign in with Google
+                    </a>
+                  )}
 
+                  {/* Primary Trigger Button */}
                   <button
                     onClick={() => handleInject(true)}
                     disabled={isBusy}
-                    className={`px-3.5 py-1.5 font-bold text-xs rounded-lg transition floating-pill flex items-center gap-1.5 shadow-lg cursor-pointer ${isBusy
+                    className={`h-7 px-3.5 font-bold text-xs rounded-lg transition floating-pill flex items-center gap-1.5 shadow-md cursor-pointer ${isBusy
                       ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 hover:opacity-95 active:scale-95 text-white shadow-indigo-600/40'
+                      : 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 hover:opacity-95 active:scale-95 text-white shadow-indigo-600/30'
                       }`}
                   >
                     {loading ? (
@@ -1173,6 +1236,7 @@
 
               <div className="relative overflow-x-auto pt-4">
                 <svg
+                  id="causal-evidence-graph-svg"
                   className={`w-full min-w-[1050px] h-[480px] rounded-2xl border transition-colors ${isDark ? 'bg-[#050811]/85 border-slate-800/80' : 'bg-[#f8fafc]/90 border-slate-200'}`}
                   viewBox="0 0 1100 470"
                 >
@@ -1573,9 +1637,34 @@
                       <span className={`text-xs mono ${textMuted}`}>Dossier ID: {dossierId} | SHA-256 Verified</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => window.print()} className={`px-3 py-1.5 text-xs font-semibold rounded-lg border cursor-pointer ${isDark ? 'bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-100 text-slate-700 border-slate-300'}`}>Print</button>
-                      <button onClick={() => window.location.href = `/api/dossier.md?scenario=${scenario}&backend=${backend}`} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow cursor-pointer">Download .md</button>
-                      <button onClick={() => setShowDossierModal(false)} className="px-3 py-1.5 text-slate-400 hover:text-slate-600 text-xs cursor-pointer">✕</button>
+                      <button
+                        onClick={() => window.print()}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg border cursor-pointer ${isDark ? 'bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-100 text-slate-700 border-slate-300'
+                          }`}
+                      >
+                        Print
+                      </button>
+
+                      <button
+                        onClick={handleExportGraphSvg}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer"
+                      >
+                        📊 Export Graph (SVG)
+                      </button>
+
+                      <button
+                        onClick={() => window.location.href = `/api/dossier.md?scenario=${scenario}&backend=${backend}`}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow cursor-pointer"
+                      >
+                        Download .md
+                      </button>
+
+                      <button
+                        onClick={() => setShowDossierModal(false)}
+                        className="px-3 py-1.5 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                      >
+                        ✕
+                      </button>
                     </div>
                   </div>
                   <div id="print-dossier-area" className={`p-6 overflow-y-auto font-mono text-xs whitespace-pre-wrap leading-relaxed select-text ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
