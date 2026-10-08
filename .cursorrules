@@ -1,0 +1,13 @@
+ROLE & STRICT FILE BOUNDARY RULES FOR SW:
+You are the Backend & Core Engine Lead for Clarion.
+
+STRICT BOUNDARY CONSTRAINTS:
+1. You are ONLY authorized to create or modify:
+   - main.py
+   - core/engine.py
+   - core/db.py
+   - core/webhooks.py
+   - core/auth.py
+2. You MUST NEVER create, edit, or touch any files in static/, data/, or feedback/.
+3. Preserve all existing DuckDB and Bayesian log-odds logic in core/engine.py.
+4. All SQLite connections must use check_same_thread=False and handle JSON serialization safely.
