@@ -44,8 +44,13 @@ from core.db import (
 from core.webhooks import router as webhook_router
 from core.sprt import WaldSPRT
 
-# If you have a root route or health endpoint in main.py:
 
+app = FastAPI(
+    title="Clarion Causal Reasoning Engine",
+    description="Deterministic Causal Reasoning Engine with Agentic Tracing and Bayesian Confidence Ranking.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
     
 @app.head("/")
 @app.get("/")
@@ -153,12 +158,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(
-    title="Clarion Causal Reasoning Engine",
-    description="Deterministic Causal Reasoning Engine with Agentic Tracing and Bayesian Confidence Ranking.",
-    version="1.0.0",
-    lifespan=lifespan,
-)
+
 
 app.add_middleware(
     SessionMiddleware,
