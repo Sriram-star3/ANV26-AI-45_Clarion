@@ -44,6 +44,22 @@ from core.db import (
 from core.webhooks import router as webhook_router
 from core.sprt import WaldSPRT
 
+
+@app.api_route("/", methods=["GET", "HEAD"])
+async def read_root():
+    """
+    Serves the React dashboard (static/index.html) at the root URL.
+    Responds with FileResponse if static/index.html exists.
+    """
+    index_path = os.path.join("static", "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"status": "error", "message": "static/index.html not found"}
+
+@app.api_route("/health", methods=["GET", "HEAD"])
+async def health_check():
+    return {"status": "ok"}
+    
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Ensure database, static dir, and default scenario dataset exist on startup."""
@@ -176,9 +192,7 @@ app.include_router(auth_router)
 
 # SPRT engine used by the live telemetry peering gateway.
 sprt_engine = WaldSPRT(alpha=0.01, beta=0.05)
-@app.api_route("/", methods=["GET", "HEAD"])
-async def root():
-    return {"status": "ok"}
+
 
 # --- PEERING SCHEMAS ---
 class PeeringPacket(BaseModel):
