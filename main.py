@@ -44,6 +44,13 @@ from core.db import (
 from core.webhooks import router as webhook_router
 from core.sprt import WaldSPRT
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Ensure database, static dir, and default scenario dataset exist on startup."""
+    init_db()
+    STATIC_DIR.mkdir(parents=True, exist_ok=True)
+    _ensure_data_ready(scenario="festival_deadlock", seed=42)
+    yield
 
 app = FastAPI(
     title="Clarion Causal Reasoning Engine",
@@ -51,7 +58,16 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
-    
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="clarion-super-secure-session-key-2026",
+    session_cookie="clarion_session",
+    max_age=86400,  # 24-hour TTL
+)
+
+
+
 @app.head("/")
 @app.get("/")
 async def root():
@@ -149,23 +165,11 @@ def _ensure_data_ready(scenario: str = "festival_deadlock", seed: int = 42) -> N
         generate_scenario(scenario=scenario, seed=seed, out_dir=DATA_DIR)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Ensure database, static dir, and default scenario dataset exist on startup."""
-    init_db()
-    STATIC_DIR.mkdir(parents=True, exist_ok=True)
-    _ensure_data_ready(scenario="festival_deadlock", seed=42)
-    yield
 
 
 
 
-app.add_middleware(
-    SessionMiddleware,
-    secret_key="clarion-super-secure-session-key-2026",
-    session_cookie="clarion_session",
-    max_age=86400,  # 24-hour TTL
-)
+
 
 app.include_router(auth_router)
 
