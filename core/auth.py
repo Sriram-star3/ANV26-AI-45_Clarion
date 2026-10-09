@@ -25,6 +25,15 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
 oauth = OAuth()
 
+
+# In main.py or core/auth.py
+try:
+    from authlib.integrations.starlette_client import OAuth
+except Exception as e:
+    OAuth = None
+    print(f"Warning: OAuth disabled due to dependency issue: {e}")
+
+
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     oauth.register(
         name="google",
