@@ -44,6 +44,11 @@ from core.db import (
 from core.webhooks import router as webhook_router
 from core.sprt import WaldSPRT
 
+@app.head("/")
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
 try:
     from core.engine import build_dossier, run_investigation, run_robustness
 except ImportError:
