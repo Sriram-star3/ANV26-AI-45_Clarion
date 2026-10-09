@@ -35,3 +35,6 @@ CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
 
 RUN python scripts/setup_vendor.py || true
 RUN python generate_data.py --scenario festival_deadlock --seed 42 --out data || true
+
+# Download offline React, Babel, and Tailwind assets during build
+RUN python scripts/setup_vendor.py || true
