@@ -3,7 +3,7 @@
 Orchestrates reasoning engine, incident history, feedback persistence, webhook alerts,
 and deterministic data generation.
 """
-
+import os
 from __future__ import annotations
 from starlette.middleware.sessions import SessionMiddleware
 from core.auth import router as auth_router, get_current_user
@@ -20,7 +20,7 @@ import uuid
 from fastapi import FastAPI, Query
 from fastapi.staticfiles import StaticFiles
 import duckdb
-import os
+
 from starlette.middleware.sessions import SessionMiddleware
 
 
