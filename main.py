@@ -45,9 +45,7 @@ from core.webhooks import router as webhook_router
 from core.sprt import WaldSPRT
 
 # If you have a root route or health endpoint in main.py:
-@app.api_route("/", methods=["GET", "HEAD"])
-async def root():
-    return {"status": "ok"}
+
     
 @app.head("/")
 @app.get("/")
@@ -174,7 +172,9 @@ app.include_router(auth_router)
 
 # SPRT engine used by the live telemetry peering gateway.
 sprt_engine = WaldSPRT(alpha=0.01, beta=0.05)
-
+@app.api_route("/", methods=["GET", "HEAD"])
+async def root():
+    return {"status": "ok"}
 
 # --- PEERING SCHEMAS ---
 class PeeringPacket(BaseModel):
