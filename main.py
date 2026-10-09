@@ -20,6 +20,8 @@ import uuid
 from fastapi import FastAPI, Query
 from fastapi.staticfiles import StaticFiles
 import duckdb
+import os
+from starlette.middleware.sessions import SessionMiddleware
 
 
 import psutil
@@ -769,3 +771,10 @@ if STATIC_DIR.exists():
             StaticFiles(directory=vendor_dir),
             name="vendor"
         )
+
+
+# Add SessionMiddleware with fallback secret_key
+app.add_middleware(
+    SessionMiddleware, 
+    secret_key=os.environ.get("SESSION_SECRET_KEY", "clarion-default-secret-key-12345")
+)
