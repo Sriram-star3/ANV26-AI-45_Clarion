@@ -44,6 +44,11 @@ from core.db import (
 from core.webhooks import router as webhook_router
 from core.sprt import WaldSPRT
 
+# If you have a root route or health endpoint in main.py:
+@app.api_route("/", methods=["GET", "HEAD"])
+async def root():
+    return {"status": "ok"}
+    
 @app.head("/")
 @app.get("/")
 async def root():
