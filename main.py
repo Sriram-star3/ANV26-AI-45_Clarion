@@ -45,20 +45,7 @@ from core.webhooks import router as webhook_router
 from core.sprt import WaldSPRT
 
 
-@app.api_route("/", methods=["GET", "HEAD"])
-async def read_root():
-    """
-    Serves the React dashboard (static/index.html) at the root URL.
-    Responds with FileResponse if static/index.html exists.
-    """
-    index_path = os.path.join("static", "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    return {"status": "error", "message": "static/index.html not found"}
 
-@app.api_route("/health", methods=["GET", "HEAD"])
-async def health_check():
-    return {"status": "ok"}
     
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -81,7 +68,20 @@ app.add_middleware(
     session_cookie="clarion_session",
     max_age=86400,  # 24-hour TTL
 )
+@app.api_route("/", methods=["GET", "HEAD"])
+async def read_root():
+    """
+    Serves the React dashboard (static/index.html) at the root URL.
+    Responds with FileResponse if static/index.html exists.
+    """
+    index_path = os.path.join("static", "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"status": "error", "message": "static/index.html not found"}
 
+@app.api_route("/health", methods=["GET", "HEAD"])
+async def health_check():
+    return {"status": "ok"}
 
 
 @app.head("/")
